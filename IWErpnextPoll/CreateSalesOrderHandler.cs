@@ -42,9 +42,7 @@ namespace IWErpnextPoll
                     }
 
                     salesOrder.Save();
-#if DEBUG
                     Logger.Information("Sales Order - {0} was saved successfully", document.Name);
-#endif
                 }
                 catch (KeyNotFoundException e)
                 {

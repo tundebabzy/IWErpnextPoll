@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.0.0.0" Manufacturer="IWW" UpgradeCode="ccc3c2fe-d20f-45ce-b978-4dc7c84ce6c8">
+	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.0.1" Manufacturer="IWW" UpgradeCode="ccc3c2fe-d20f-45ce-b978-4dc7c84ce6c8">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -22,11 +22,6 @@
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<Component Id="ProductComponent">
-				<File Source="$(var.IWErpnextPoll.TargetPath)" />
-				<ServiceInstall Id="ServiceInstaller" Name="IWErpnextPoll" Type="ownProcess" Vital="yes" Description="A background service that imports sales orders and purchase orders from ERPNext into Sage 50." Start="demand" Account=".\LocalSystem" ErrorControl="normal" Interactive="no" />
-				<ServiceControl Id="StartService" Name="IWErpnextPoll" Stop="both" Start="install" Remove="uninstall" Wait="yes" />
-			</Component>
 			<Component Id="Sage.Peachtree.API.dll">
 				<File Source="$(var.IWErpnextPoll.TargetDir)Sage.Peachtree.API.dll" />
 			</Component>
@@ -36,14 +31,16 @@
 			<Component Id="Serilog.dll">
 				<File Source="$(var.IWErpnextPoll.TargetDir)Serilog.dll" />
 			</Component>
-			<Component Id="Serilog.Settings.AppSettings.dll">
-				<File Source="$(var.IWErpnextPoll.TargetDir)Serilog.Settings.AppSettings.dll" />
-			</Component>
 			<Component Id="Serilog.Sinks.File.dll">
 				<File Source="$(var.IWErpnextPoll.TargetDir)Serilog.Sinks.File.dll" />
 			</Component>
 			<Component Id="RestSharp.dll">
 				<File Source="$(var.IWErpnextPoll.TargetDir)RestSharp.dll" />
+			</Component>
+			<Component Id="ProductComponent">
+				<File Source="$(var.IWErpnextPoll.TargetPath)" />
+				<ServiceInstall Id="ServiceInstaller" Name="IWErpnextPoll" Type="ownProcess" Vital="yes" Description="A background service that imports sales orders and purchase orders from ERPNext into Sage 50." Start="demand" Account=".\LocalSystem" ErrorControl="normal" Interactive="no" />
+				<ServiceControl Id="StartService" Name="IWErpnextPoll" Stop="both" Start="install" Remove="uninstall" Wait="yes" />
 			</Component>
 		</ComponentGroup>
 	</Fragment>

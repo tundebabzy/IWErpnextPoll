@@ -33,9 +33,7 @@ namespace IWErpnextPoll
                 }
                 else // otherwise, display a message to user that there was insufficient access.
                 {
-#if DEBUG
                     Logger.Error("Authorization request was not successful - {0}. Will retry.", authorizationResult);
-#endif
                 }
             }
             catch (Sage.Peachtree.API.Exceptions.LicenseNotAvailableException e)
@@ -123,33 +121,29 @@ namespace IWErpnextPoll
 
         private void SetupLogger()
         {
-            Logger = new LoggerConfiguration().ReadFrom.AppSettings().CreateLogger();
+            String path = @"%PROGRAMDATA%\IWERPNextPoll\Logs\log-.txt";
+            String logFilePath = Environment.ExpandEnvironmentVariables(path);
+            Logger = new LoggerConfiguration().WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day).CreateLogger();
         }
 
         protected override void OnContinue()
         {
             _canRequest = true;
-#if DEBUG
             Logger.Information("Service continued");
-#endif
             Logger.Debug("State = {0}", _canRequest);
         }
 
         protected override void OnPause()
         {
             _canRequest = false;
-#if DEBUG
             Logger.Information("Service paused");
-#endif
             Logger.Debug("State = {0}", _canRequest);
         }
 
         protected override void OnStart(string[] args)
         {
             _canRequest = true;
-#if DEBUG
             Logger.Information("Service started");
-#endif
             Logger.Debug("State = {0}", _canRequest);
             OpenSession(APPLICATION_ID);
             this.StartTimer();
@@ -177,9 +171,8 @@ namespace IWErpnextPoll
             };
             timer.Elapsed += new ElapsedEventHandler(this.OnTimer);
             timer.Start();
-#if DEBUG
             Logger.Information("Timer started");
-#endif
+            Logger.Information("Timer interval is {0} minutes", timer.Interval / 60000);
         }
 
         /**
@@ -289,11 +282,10 @@ namespace IWErpnextPoll
         protected override void OnStop()
         {
             _canRequest = false;
-#if DEBUG
-            Logger.Information("Service stopped");
-#endif
             CloseCompany();
             CloseSession();
+
+            Logger.Information("Service stopped");
         }
 
         [DllImport("advapi32.dll", SetLastError = true)]

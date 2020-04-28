@@ -35,9 +35,7 @@ namespace IWErpnextPoll
                     }
 
                     purchaseOrder.Save();
-#if DEBUG
                     Logger.Information("Purchase Order - {PurchaseOrderDocument} saved successfully", purchaseOrderDocument.Name);
-#endif
                 }
                 catch (KeyNotFoundException e)
                 {
