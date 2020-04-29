@@ -64,6 +64,7 @@ namespace IWErpnextPoll
                 {
                     // abort. This could be a sales order that has already been saved.
                     Logger.Debug(e, e.Message);
+                    Logger.Debug("@{Document} will be sent back to the queue", document);
                     Logger.Debug("@{Document}", document);
                     Logger.Debug("@{E}", e);
                     salesOrder = null;

@@ -196,9 +196,7 @@ namespace IWErpnextPoll
          */
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
-#if DEBUG
             Logger.Information("Timer callback called");
-#endif
             if (_canRequest)
             {
                 if (Company == null || Company.IsClosed)
@@ -211,6 +209,11 @@ namespace IWErpnextPoll
                     {
                         GetDocumentsThenProcessQueue();
                     }
+                } else
+                {
+                    Logger.Debug("Session is initialized: {0}", Session != null);
+                    Logger.Debug("Session is active: {0}", Session.SessionActive);
+                    Logger.Debug("Company is initialized: {0}", Company != null);
                 }
             }
         }

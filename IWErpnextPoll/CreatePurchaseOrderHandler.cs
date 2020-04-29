@@ -47,6 +47,7 @@ namespace IWErpnextPoll
                 {
                     // among others, it could be a duplicate
                     Logger.Debug(e, e.Message);
+                    Logger.Debug("@{PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument);
                     Logger.Debug("@{E}", e);
                     Logger.Debug("@{PurchaseOrderDocument}", purchaseOrderDocument.Name);
                     purchaseOrder = null;
