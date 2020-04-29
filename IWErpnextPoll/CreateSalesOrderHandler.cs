@@ -66,6 +66,7 @@ namespace IWErpnextPoll
                     Logger.Debug(e, e.Message);
                     Logger.Debug("@{Document}", document);
                     Logger.Debug("@{E}", e);
+                    salesOrder = null;
                 }
                 catch (Exception e)
                 {

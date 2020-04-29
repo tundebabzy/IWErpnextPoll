@@ -49,6 +49,7 @@ namespace IWErpnextPoll
                     Logger.Debug(e, e.Message);
                     Logger.Debug("@{E}", e);
                     Logger.Debug("@{PurchaseOrderDocument}", purchaseOrderDocument.Name);
+                    purchaseOrder = null;
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
                 {
