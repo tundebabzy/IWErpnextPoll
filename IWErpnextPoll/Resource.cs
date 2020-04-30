@@ -17,6 +17,13 @@ namespace IWErpnextPoll
             _restClient.AddDefaultHeader("Authorization", string.Format("token {0}:{1}", _apiToken, _apiSecret));
         }
 
+        public IRestResponse<PurchaseOrderResponse> GetPurchaseOrderList()
+        {
+            RestRequest request = new RestRequest(Method.GET);
+            IRestResponse<PurchaseOrderResponse> response = _restClient.Execute<PurchaseOrderResponse>(request);
+            return response;
+        }
+
         /**
          * Makes a request to the given ERPNext server and pulls the data in JSON format
          */
@@ -27,10 +34,40 @@ namespace IWErpnextPoll
             return response;
         }
 
-        public IRestResponse<PurchaseOrderResponse> GetPurchaseOrderList()
+        public IRestResponse<SalesInvoiceResponse> GetSalesInvoiceList()
         {
             RestRequest request = new RestRequest(Method.GET);
-            IRestResponse<PurchaseOrderResponse> response = _restClient.Execute<PurchaseOrderResponse>(request);
+            IRestResponse<SalesInvoiceResponse> response = _restClient.Execute<SalesInvoiceResponse>(request);
+            return response;
+        }
+
+        public IRestResponse LogPurchaseOrder(PurchaseOrderDocument document)
+        {
+            Log log = new Log
+            {
+                document_name = document.Name,
+                export_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_date = document.TransactionDate.ToString("yyyy-MM-dd"),
+                document_type = "Purchase Order"
+            };
+            RestRequest request = new RestRequest(Method.POST);
+            request.AddJsonBody(log);
+            IRestResponse response = _restClient.Execute(request);
+            return response;
+        }
+
+        public IRestResponse LogSalesInvoice(SalesInvoiceDocument document)
+        {
+            Log log = new Log
+            {
+                document_name = document.Name,
+                export_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_date = document.PostingDate.ToString("yyyy-MM-dd"),
+                document_type = "Sales Invoice"
+            };
+            RestRequest request = new RestRequest(Method.POST);
+            request.AddJsonBody(log);
+            IRestResponse response = _restClient.Execute(request);
             return response;
         }
 
@@ -49,19 +86,5 @@ namespace IWErpnextPoll
             return response;
         }
 
-        public IRestResponse LogPurchaseOrder(PurchaseOrderDocument document)
-        {
-            Log log = new Log
-            {
-                document_name = document.Name,
-                export_date = DateTime.Now.ToString("yyyy-MM-dd"),
-                document_date = document.TransactionDate.ToString("yyyy-MM-dd"),
-                document_type = "Purchase Order"
-            };
-            RestRequest request = new RestRequest(Method.POST);
-            request.AddJsonBody(log);
-            IRestResponse response = _restClient.Execute(request);
-            return response;
-        }
     }
 }

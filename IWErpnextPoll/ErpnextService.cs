@@ -1,11 +1,11 @@
-﻿using Sage.Peachtree.API;
+﻿using RestSharp;
+using Sage.Peachtree.API;
+using Serilog;
 using System;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Timers;
-using System.Runtime.InteropServices;
-using RestSharp;
-using System.Collections.Concurrent;
-using Serilog;
 
 namespace IWErpnextPoll
 {
@@ -157,12 +157,12 @@ namespace IWErpnextPoll
                 DocumentTypeHandler handler = new DocumentTypeHandler(Company, Logger);
                 while (queue.TryDequeue(out object document) && Session.SessionActive)
                 {
-                     handler.Handle(document);
+                    handler.Handle(document);
                 }
             }
         }
 
- 
+
         private void StartTimer()
         {
             Timer timer = new Timer
@@ -209,7 +209,8 @@ namespace IWErpnextPoll
                     {
                         GetDocumentsThenProcessQueue();
                     }
-                } else
+                }
+                else
                 {
                     Logger.Debug("Session is initialized: {0}", Session != null);
                     Logger.Debug("Session is active: {0}", Session.SessionActive);
@@ -249,10 +250,14 @@ namespace IWErpnextPoll
         {
             PurchaseOrderCommand purchaseOrderCommand = new PurchaseOrderCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.purchase_order.get_purchase_orders_for_sage");
             SalesOrderCommand salesOrderCommand = new SalesOrderCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.sales_order.get_sales_orders_for_sage");
+            SalesInvoiceCommand salesInvoiceCommand = new SalesInvoiceCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.sales_invoice.get_sales_invoices_for_sage");
+
             IRestResponse<SalesOrderResponse> salesOrders = salesOrderCommand.Execute();
             IRestResponse<PurchaseOrderResponse> purchaseOrders = purchaseOrderCommand.Execute();
+            IRestResponse<SalesInvoiceResponse> salesInvoices = salesInvoiceCommand.Execute();
             this.SendToQueue(salesOrders.Data);
             this.SendToQueue(purchaseOrders.Data);
+            this.SendToQueue(salesInvoices.Data);
         }
 
         /**
@@ -280,6 +285,17 @@ namespace IWErpnextPoll
                 }
             }
 
+        }
+
+        private void SendToQueue(SalesInvoiceResponse response)
+        {
+            if (response != null && response.Message != null)
+            {
+                foreach (var item in response.Message)
+                {
+                    this.queue.Enqueue(item);
+                }
+            }
         }
 
         protected override void OnStop()
