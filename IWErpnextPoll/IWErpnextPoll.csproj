@@ -100,13 +100,19 @@
   <ItemGroup>
     <Compile Include="AbstractDocumentHandler.cs" />
     <Compile Include="CreatePurchaseOrderHandler.cs" />
+    <Compile Include="CreateSalesInvoiceHandler.cs" />
     <Compile Include="CreateSalesOrderHandler.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogPurchaseOrderHandler.cs" />
+    <Compile Include="LogSalesInvoiceHandler.cs" />
     <Compile Include="LogSalesOrderHandler.cs" />
     <Compile Include="PurchaseOrderDocument.cs" />
     <Compile Include="PurchaseOrderItem.cs" />
     <Compile Include="PurchaseOrderResponse.cs" />
+    <Compile Include="SalesInvoiceCommand.cs" />
+    <Compile Include="SalesInvoiceDocument.cs" />
+    <Compile Include="SalesInvoiceItem.cs" />
+    <Compile Include="SalesInvoiceResponse.cs" />
     <Compile Include="SalesOrderDocument.cs" />
     <Compile Include="DocumentTypeHandler.cs" />
     <Compile Include="ErpnextService.cs">

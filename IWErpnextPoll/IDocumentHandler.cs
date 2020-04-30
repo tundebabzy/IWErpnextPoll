@@ -1,6 +1,4 @@
-﻿using Sage.Peachtree.API;
-
-namespace IWErpnextPoll
+﻿namespace IWErpnextPoll
 {
     interface IDocumentHandler
     {

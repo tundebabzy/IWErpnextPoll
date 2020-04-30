@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace IWErpnextPoll
 {
-    abstract class AbstractDocumentHandler: IDocumentHandler
+    abstract class AbstractDocumentHandler : IDocumentHandler
     {
         private IDocumentHandler _nextHandler;
 
