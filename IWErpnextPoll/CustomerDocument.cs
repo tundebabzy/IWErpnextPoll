@@ -10,6 +10,7 @@ namespace IWErpnextPoll
         public string customer_type;
         public string customer_email;
         public string company_website;
+        public int disabled;
         public string telephone_1;
         public string telephone_2;
         public string fax_number;
