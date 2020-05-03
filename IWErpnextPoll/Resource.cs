@@ -17,6 +17,13 @@ namespace IWErpnextPoll
             _restClient.AddDefaultHeader("Authorization", string.Format("token {0}:{1}", _apiToken, _apiSecret));
         }
 
+        public IRestResponse<CustomerResponse> GetCustomerDetails(string customerName)
+        {
+            RestRequest request = new RestRequest(Method.GET);
+            IRestResponse<CustomerResponse> response = _restClient.Execute<CustomerResponse>(request);
+            return response;
+        }
+
         public IRestResponse<PurchaseOrderResponse> GetPurchaseOrderList()
         {
             RestRequest request = new RestRequest(Method.GET);

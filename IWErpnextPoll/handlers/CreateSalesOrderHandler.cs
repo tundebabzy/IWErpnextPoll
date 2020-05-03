@@ -51,6 +51,7 @@ namespace IWErpnextPoll
                     Logger.Debug("@{Document}", document);
                     Logger.Debug("@{E}", e);
                     salesOrder = null;
+                    SetNext(new CreateCustomerHandler(Company, Logger));
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
                 {
