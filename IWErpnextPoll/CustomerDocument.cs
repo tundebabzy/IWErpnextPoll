@@ -4,24 +4,24 @@ namespace IWErpnextPoll
 {
     public class CustomerDocument
     {
-        public string name;
-        public string owner;
-        public string customer_name;
-        public string customer_type;
-        public string customer_email;
-        public string company_website;
-        public int disabled;
-        public string telephone_1;
-        public string telephone_2;
-        public string fax_number;
-        public string sales_rep;
-        public string ship_via;
-        public string old_customer_id;
-        public string website;
-        public string email_id;
-        public string payment_terms;
-        public string doctype;
-        public List<ContactDocument> contacts;
-        public List<AddressDocument> addresses;
+        public string Name { get; set; }
+        public string Owner { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerType { get; set; }
+        public string CustomerEmail { get; set; }
+        public string CompanyWebsite { get; set; }
+        public int Disabled { get; set; }
+        public string Telephone1 { get; set; }
+        public string Telephone2 { get; set; }
+        public string FaxNumber { get; set; }
+        public string SalesRep { get; set; }
+        public string ShipVia { get; set; }
+        public string OldCustomerId { get; set; }
+        public string Website { get; set; }
+        public string EmailId { get; set; }
+        public string PaymentTerms { get; set; }
+        public string Doctype { get; set; }
+        public List<ContactDocument> Contacts { get; set; }
+        public List<AddressDocument> Addresses { get; set; }
     }
 }

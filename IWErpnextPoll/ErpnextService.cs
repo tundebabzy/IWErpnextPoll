@@ -123,7 +123,10 @@ namespace IWErpnextPoll
         {
             String path = @"%PROGRAMDATA%\IWERPNextPoll\Logs\log-.txt";
             String logFilePath = Environment.ExpandEnvironmentVariables(path);
-            Logger = new LoggerConfiguration().WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day).CreateLogger();
+            Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
         protected override void OnContinue()

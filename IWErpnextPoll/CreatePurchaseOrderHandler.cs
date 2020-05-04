@@ -41,29 +41,30 @@ namespace IWErpnextPoll
                 {
                     purchaseOrder = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@E}", e);
+                    SetNext(new CreateSupplierHandler(Company, Logger));
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
                     // among others, it could be a duplicate
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument);
-                    Logger.Debug("@{E}", e);
-                    Logger.Debug("@{PurchaseOrderDocument}", purchaseOrderDocument.Name);
+                    Logger.Debug("{@PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument);
+                    Logger.Debug("{@E}", e);
+                    Logger.Debug("{@PurchaseOrderDocument}", purchaseOrderDocument.Name);
                     purchaseOrder = null;
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
                 {
                     purchaseOrder = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{E}", e);
-                    Logger.Debug("@{PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument.Name);
+                    Logger.Debug("{@E}", e);
+                    Logger.Debug("{@PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument.Name);
                 }
                 catch (Exception e)
                 {
                     purchaseOrder = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@E}", e);
                 }
             }
             return purchaseOrder;

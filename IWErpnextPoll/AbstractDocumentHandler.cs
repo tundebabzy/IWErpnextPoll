@@ -87,6 +87,11 @@ namespace IWErpnextPoll
             return handler;
         }
 
+        public IDocumentHandler GetNext()
+        {
+            return this._nextHandler;
+        }
+
         public virtual object Handle(object request)
         {
             if (this._nextHandler != null)

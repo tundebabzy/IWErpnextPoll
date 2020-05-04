@@ -4,6 +4,6 @@ namespace IWErpnextPoll
 {
     public class CustomerResponse
     {
-        public List<CustomerDocument> Message { get; set; }
+        public CustomerDocument Message { get; set; }
     }
 }

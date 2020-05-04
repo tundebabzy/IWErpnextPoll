@@ -105,9 +105,12 @@
     <Compile Include="CreatePurchaseOrderHandler.cs" />
     <Compile Include="CreateSalesInvoiceHandler.cs" />
     <Compile Include="CreateSalesOrderHandler.cs" />
+    <Compile Include="CreateSupplierHandler.cs" />
+    <Compile Include="CustomerCommand.cs" />
     <Compile Include="CustomerDocument.cs" />
     <Compile Include="CustomerResponse.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="LogCustomerCreatedHandler.cs" />
     <Compile Include="LogPurchaseOrderHandler.cs" />
     <Compile Include="LogSalesInvoiceHandler.cs" />
     <Compile Include="LogSalesOrderHandler.cs" />
@@ -127,7 +130,6 @@
       <DependentUpon>ErpnextService.cs</DependentUpon>
     </Compile>
     <Compile Include="SalesOrderResponse.cs" />
-    <Compile Include="ICommand.cs" />
     <Compile Include="IDocumentHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">

@@ -46,8 +46,8 @@ namespace IWErpnextPoll
                 {
                     // push to a handler to create this missing customer
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document}", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document}", document);
+                    Logger.Debug("{@E}", e);
                     salesInvoice = null;
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
@@ -55,23 +55,23 @@ namespace IWErpnextPoll
                     // abort. The unsaved data will eventually be re-queued
                     salesInvoice = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document} will be sent back to the queue", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document} will be sent back to the queue", document);
+                    Logger.Debug("{@E}", e);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
                     // abort. This could be a Sales Invoice that has already been saved.
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document} will be sent back to the queue", document);
-                    Logger.Debug("@{Document}", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document} will be sent back to the queue", document);
+                    Logger.Debug("{@Document}", document);
+                    Logger.Debug("{@E}", e);
                     salesInvoice = null;
                 }
                 catch (Exception e)
                 {
                     salesInvoice = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@E}", e);
                 }
             }
             return salesInvoice;

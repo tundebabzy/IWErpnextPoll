@@ -17,7 +17,7 @@ namespace IWErpnextPoll
             _restClient.AddDefaultHeader("Authorization", string.Format("token {0}:{1}", _apiToken, _apiSecret));
         }
 
-        public IRestResponse<CustomerResponse> GetCustomerDetails(string customerName)
+        public IRestResponse<CustomerResponse> GetCustomerDetails()
         {
             RestRequest request = new RestRequest(Method.GET);
             IRestResponse<CustomerResponse> response = _restClient.Execute<CustomerResponse>(request);
@@ -45,6 +45,21 @@ namespace IWErpnextPoll
         {
             RestRequest request = new RestRequest(Method.GET);
             IRestResponse<SalesInvoiceResponse> response = _restClient.Execute<SalesInvoiceResponse>(request);
+            return response;
+        }
+
+        public IRestResponse LogCustomer(CustomerDocument document)
+        {
+            Log log = new Log
+            {
+                document_name = document.Name,
+                export_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_type = "Customer"
+            };
+            RestRequest request = new RestRequest(Method.POST);
+            request.AddJsonBody(log);
+            IRestResponse response = _restClient.Execute(request);
             return response;
         }
 

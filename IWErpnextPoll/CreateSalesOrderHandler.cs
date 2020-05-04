@@ -13,7 +13,10 @@ namespace IWErpnextPoll
         public override object Handle(object request)
         {
             SalesOrder salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
-            this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger) : null);
+            if (GetNext() == null)
+            {
+                this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger) : null);
+            }
             return base.Handle(request);
         }
 
@@ -48,8 +51,8 @@ namespace IWErpnextPoll
                 {
                     // push to a handler to create this missing customer
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document}", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document}", document);
+                    Logger.Debug("{@E}", e);
                     salesOrder = null;
                     SetNext(new CreateCustomerHandler(Company, Logger));
                 }
@@ -58,23 +61,23 @@ namespace IWErpnextPoll
                     // abort. The unsaved data will eventually be re-queued
                     salesOrder = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document} will be sent back to the queue", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document} will be sent back to the queue", document);
+                    Logger.Debug("{@E}", e);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
                     // abort. This could be a sales order that has already been saved.
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{Document} will be sent back to the queue", document);
-                    Logger.Debug("@{Document}", document);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@Document} will be sent back to the queue", document);
+                    Logger.Debug("{@Document}", document);
+                    Logger.Debug("{@E}", e);
                     salesOrder = null;
                 }
                 catch (Exception e)
                 {
                     salesOrder = null;
                     Logger.Debug(e, e.Message);
-                    Logger.Debug("@{E}", e);
+                    Logger.Debug("{@E}", e);
                 }
             }
             return salesOrder;
