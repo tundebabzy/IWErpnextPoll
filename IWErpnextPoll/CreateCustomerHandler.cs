@@ -41,8 +41,15 @@ namespace IWErpnextPoll
                     customer.WebSiteURL = customerDocument.CompanyWebsite;
                     customer.CustomerSince = DateTime.Now;
                     customer.IsInactive = customerDocument.Disabled == 1;
-                    AddAddresses(customer, customerDocument);
-                    AddContacts(customer, customerDocument);
+                    if (customerDocument.Addresses.Count > 0)
+                    {
+                        AddAddresses(customer, customerDocument);
+                        AddContacts(customer, customerDocument);
+                    }
+                    else
+                    {
+                        Logger.Information("Customer {@Name} did not have addresses so will not create a contact", customer.Name);
+                    }
                     AddSalesRep(customer, customerDocument);
 
                     customer.Save();
@@ -106,11 +113,9 @@ namespace IWErpnextPoll
             employees.Load();
             foreach (var item in employees)
             {
-                if (item.Name == customerDocument.SalesRep)
-                {
-                    customer.SalesRepresentativeReference = item.Key;
-                    break;
-                }
+                if (item.Name != customerDocument.SalesRep) continue;
+                customer.SalesRepresentativeReference = item.Key;
+                break;
             }
         }
 
