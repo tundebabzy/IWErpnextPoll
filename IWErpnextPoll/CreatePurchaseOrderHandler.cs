@@ -11,7 +11,10 @@ namespace IWErpnextPoll
         public override object Handle(object request)
         {
             PurchaseOrder purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
-            this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger) : null);
+            if (GetNext() == null)
+            {
+                this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger) : null);
+            }
             return base.Handle(request);
         }
 
@@ -37,28 +40,24 @@ namespace IWErpnextPoll
                     purchaseOrder.Save();
                     Logger.Information("Purchase Order - {PurchaseOrderDocument} saved successfully", purchaseOrderDocument.Name);
                 }
-                catch (KeyNotFoundException e)
+                catch (KeyNotFoundException)
                 {
                     purchaseOrder = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
+                    Logger.Debug("Vendor {@Name} in {@Document} was not found", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
                     SetNext(new CreateSupplierHandler(Company, Logger));
+                    Logger.Debug("Customer {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
-                    // among others, it could be a duplicate
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument);
-                    Logger.Debug("{@E}", e);
-                    Logger.Debug("{@PurchaseOrderDocument}", purchaseOrderDocument.Name);
+                    Logger.Debug("Validation failed.");
+                    Logger.Debug(e.Message);
+                    Logger.Debug("{@Name} will be sent back to the queue", purchaseOrderDocument.Name);
                     purchaseOrder = null;
                 }
-                catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
+                catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {
                     purchaseOrder = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
-                    Logger.Debug("{@PurchaseOrderDocument} will be sent back to the queue", purchaseOrderDocument.Name);
+                    Logger.Debug("Record is in use. {@Name} will be sent back to the queue", purchaseOrderDocument.Name);
                 }
                 catch (Exception e)
                 {

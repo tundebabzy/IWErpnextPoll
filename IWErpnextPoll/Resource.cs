@@ -48,6 +48,13 @@ namespace IWErpnextPoll
             return response;
         }
 
+        public IRestResponse<SupplierResponse> GetSupplierDetails()
+        {
+            RestRequest request = new RestRequest(Method.GET);
+            IRestResponse<SupplierResponse> response = _restClient.Execute<SupplierResponse>(request);
+            return response;
+        }
+
         public IRestResponse LogCustomer(CustomerDocument document)
         {
             Log log = new Log
@@ -107,6 +114,23 @@ namespace IWErpnextPoll
             IRestResponse response = _restClient.Execute(request);
             return response;
         }
+
+        public IRestResponse LogSupplier(SupplierDocument supplierDocument)
+        {
+            Log log = new Log
+            {
+                document_name = supplierDocument.Name,
+                export_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_date = DateTime.Now.ToString("yyyy-MM-dd"),
+                document_type = supplierDocument.Doctype
+            };
+
+            RestRequest request = new RestRequest(Method.POST);
+            request.AddJsonBody(log);
+            IRestResponse response = _restClient.Execute(request);
+            return response;
+        }
+
 
     }
 }

@@ -27,7 +27,7 @@ namespace IWErpnextPoll
             {
                 try
                 {
-                    /** TODO: customer ID is a more reliable way to get Sage CUstomers */
+                    // TODO: customer ID is a more reliable way to get Sage Customers
                     salesOrder.CustomerReference = CustomerReferences[document.Customer];
                     salesOrder.CustomerPurchaseOrderNumber = document.PoNo;
                     salesOrder.CustomerNote = document.NotesOrSpecialInstructions;
@@ -47,30 +47,26 @@ namespace IWErpnextPoll
                     salesOrder.Save();
                     Logger.Information("Sales Order - {0} was saved successfully", document.Name);
                 }
-                catch (KeyNotFoundException e)
+                catch (KeyNotFoundException)
                 {
                     // push to a handler to create this missing customer
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@Document}", document);
-                    Logger.Debug("{@E}", e);
+                    Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
                     salesOrder = null;
                     SetNext(new CreateCustomerHandler(Company, Logger));
+                    Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
                 }
-                catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
+                catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {
                     // abort. The unsaved data will eventually be re-queued
                     salesOrder = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@Document} will be sent back to the queue", document);
-                    Logger.Debug("{@E}", e);
+                    Logger.Debug("Record is in use. {@Name} will be sent back to the queue", document.Name);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
                     // abort. This could be a sales order that has already been saved.
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@Document} will be sent back to the queue", document);
-                    Logger.Debug("{@Document}", document);
-                    Logger.Debug("{@E}", e);
+                    Logger.Debug("Validation failed.");
+                    Logger.Debug(e.Message);
+                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);
                     salesOrder = null;
                 }
                 catch (Exception e)

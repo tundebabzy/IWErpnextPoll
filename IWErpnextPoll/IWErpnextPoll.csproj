@@ -114,6 +114,7 @@
     <Compile Include="LogPurchaseOrderHandler.cs" />
     <Compile Include="LogSalesInvoiceHandler.cs" />
     <Compile Include="LogSalesOrderHandler.cs" />
+    <Compile Include="LogSupplierCreatedHandler.cs" />
     <Compile Include="PurchaseOrderDocument.cs" />
     <Compile Include="PurchaseOrderItem.cs" />
     <Compile Include="PurchaseOrderResponse.cs" />
@@ -143,6 +144,9 @@
     <Compile Include="Resource.cs" />
     <Compile Include="SalesOrderCommand.cs" />
     <Compile Include="SalesOrderItem.cs" />
+    <Compile Include="SupplierCommand.cs" />
+    <Compile Include="SupplierDocument.cs" />
+    <Compile Include="SupplierResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

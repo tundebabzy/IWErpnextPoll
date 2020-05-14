@@ -35,7 +35,7 @@ namespace IWErpnextPoll
             {
                 try
                 {
-                    customer.ID = customerDocument.Name;    // add a field - ID to Customer doctype
+                    customer.ID = customerDocument.OldCustomerId;    // add a field - ID to Customer doctype
                     customer.Email = customerDocument.CustomerEmail;
                     customer.Name = customerDocument.CustomerName;
                     customer.ShipVia = customerDocument.ShipVia;
@@ -49,27 +49,17 @@ namespace IWErpnextPoll
                     customer.Save();
                     Logger.Information("Customer - {Customer} saved successfully", customerDocument.CustomerName);
                 }
-                catch (KeyNotFoundException e)
-                {
-                    customer = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
-                }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
-                    // among others, it could be a duplicate
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@CustomerDocument} will be sent back to the queue", customerDocument);
-                    Logger.Debug("{@E}", e);
-                    Logger.Debug("{@CustomerDocument}", customerDocument.Name);
+                    Logger.Debug("Validation failed.");
+                    Logger.Debug(e.Message);
+                    Logger.Debug("{@Name} will be sent back to the queue", customerDocument.Name);
                     customer = null;
                 }
-                catch (Sage.Peachtree.API.Exceptions.RecordInUseException e)
+                catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {
                     customer = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
-                    Logger.Debug("{@CustomerDocument} will be sent back to the queue", customerDocument.Name);
+                    Logger.Debug("Record is in use. {@Name} will be sent back to the queue", customerDocument.Name);
                 }
                 catch (Exception e)
                 {
