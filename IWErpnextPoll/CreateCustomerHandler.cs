@@ -2,7 +2,6 @@
 using Sage.Peachtree.API;
 using Serilog;
 using System;
-using System.Collections.Generic;
 
 namespace IWErpnextPoll
 {
@@ -13,9 +12,9 @@ namespace IWErpnextPoll
 
         public override object Handle(object request)
         {
-            string customerName = (request as SalesOrderDocument).Customer;
-            CustomerDocument customerDocument = GetCustomerDetails(customerName);
-            Customer customer = CreateNewCustomer(customerDocument);
+            string customerName = (request as SalesOrderDocument)?.Customer;
+            CustomerDocument customerDocument = customerName != null ? GetCustomerDetails(customerName) : null;
+            Customer customer = customerDocument != null ? CreateNewCustomer(customerDocument) : null;
             this.SetNext(customer != null ? new LogCustomerCreatedHandler(Company, Logger) : null);
             return base.Handle(customerDocument);
         }
@@ -119,13 +118,12 @@ namespace IWErpnextPoll
         {
             foreach (var c in customerDocument.Contacts)
             {
-                if (customer.BillToContact.CompanyName != null && customer.BillToContact.CompanyName.Length
-                    > 0 && customer.ShipToContact.CompanyName != null && customer.ShipToContact.CompanyName.Length > 0)
+                if (!string.IsNullOrEmpty(customer.BillToContact.CompanyName) && !string.IsNullOrEmpty(customer.ShipToContact.CompanyName))
                 {
                     break;
                 }
-                else if ((customer.BillToContact.CompanyName == null || customer.BillToContact.CompanyName.Length == 0)
-                    && (customer.BillToContact.Address.Address1 != null || customer.BillToContact.Address.Address1.Length != 0))
+                else if (customer.BillToContact.Address.Address1 != null && (string.IsNullOrEmpty(customer.BillToContact.CompanyName)
+                                                                             && (customer.BillToContact.Address.Address1 != null || customer.BillToContact.Address.Address1.Length != 0)))
                 {
                     customer.BillToContact.CompanyName = customerDocument.CustomerName;
                     customer.BillToContact.Email = c.EmailId;
@@ -133,8 +131,8 @@ namespace IWErpnextPoll
                     customer.BillToContact.Gender = c.Gender == "Male" ? Gender.Male : c.Gender == "Female" ? Gender.Female : Gender.NotSpecified;
                     customer.BillToContact.LastName = c.LastName;
                     customer.BillToContact.Title = c.Salutation;
-                } else if ((customer.ShipToContact.CompanyName == null || customer.ShipToContact.CompanyName.Length == 0)
-                    && (customer.ShipToContact.Address.Address1 != null || customer.ShipToContact.Address.Address1.Length != 0))
+                } else if (customer.ShipToContact.Address.Address1 != null && (string.IsNullOrEmpty(customer.ShipToContact.CompanyName)
+                                                                               && (customer.ShipToContact.Address.Address1 != null || customer.ShipToContact.Address.Address1.Length != 0)))
                 {
                     customer.ShipToContact.CompanyName = customerDocument.CustomerName;
                     customer.ShipToContact.Email = c.EmailId;
