@@ -30,57 +30,67 @@ namespace IWErpnextPoll
         private Customer CreateNewCustomer(CustomerDocument customerDocument)
         {
             Customer customer = Company.Factories.CustomerFactory.Create();
-            if (customer != null && customerDocument != null)
-            {
-                try
-                {
-                    customer.ID = customerDocument.OldCustomerId;    // add a field - ID to Customer doctype
-                    customer.Email = customerDocument.CustomerEmail;
-                    customer.Name = customerDocument.CustomerName;
-                    customer.ShipVia = customerDocument.ShipVia;
-                    customer.WebSiteURL = customerDocument.CompanyWebsite;
-                    customer.CustomerSince = DateTime.Now;
-                    customer.IsInactive = customerDocument.Disabled == 1;
-                    if (customerDocument.Addresses.Count > 0)
-                    {
-                        AddAddresses(customer, customerDocument);
-                        AddContacts(customer, customerDocument);
-                    }
-                    else
-                    {
-                        Logger.Information("Customer {@Name} did not have addresses so will not create a contact", customer.Name);
-                    }
-                    AddSalesRep(customer, customerDocument);
-
-                    customer.Save();
-                    Logger.Information("Customer - {Customer} saved successfully", customerDocument.CustomerName);
-                }
-                catch (Sage.Peachtree.API.Exceptions.ValidationException e)
-                {
-                    Logger.Debug("Validation failed.");
-                    Logger.Debug(e.Message);
-                    Logger.Debug("{@Name} will be sent back to the queue", customerDocument.Name);
-                    customer = null;
-                }
-                catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
-                {
-                    customer = null;
-                    Logger.Debug("Record is in use. {@Name} will be sent back to the queue", customerDocument.Name);
-                }
-                catch (Exception e)
-                {
-                    customer = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
-                }
-            }
-
             if (customer == null)
             {
-                Logger.Debug("Customer data was null when trying to create Sage customer");
+                Logger.Information("Customer data was null when trying to create Sage customer");
+                return null;
+            }
+
+            if (customerDocument == null || customerDocument.Addresses.Count == 0)
+            {
+                Logger.Information("Customer has no address so the customer cannot be created");
+                return customer;
+            }
+            try
+            {
+                customer.ID = customerDocument.OldCustomerId;    // add a field - ID to Customer doctype
+                customer.Name = customerDocument.CustomerName;
+                AddContact(customer, customerDocument);
+                AddSalesRep(customer, customerDocument);
+
+                customer.Save();
+                Logger.Information("Customer - {Customer} saved successfully", customerDocument.CustomerName);
+            }
+            catch (Sage.Peachtree.API.Exceptions.ValidationException e)
+            {
+                Logger.Debug("Validation failed.");
+                Logger.Debug(e.Message);
+                Logger.Debug("{@Name} will be sent back to the queue", customerDocument.Name);
+                customer = null;
+            }
+            catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
+            {
+                customer = null;
+                Logger.Debug("Record is in use. {@Name} will be sent back to the queue", customerDocument.Name);
+            }
+            catch (Exception e)
+            {
+                customer = null;
+                Logger.Debug(e, e.Message);
+                Logger.Debug("{@E}", e);
             }
 
             return customer;
+        }
+
+        private void AddContact(Customer customer, CustomerDocument customerDocument)
+        {
+            if (customerDocument.Addresses.Count > 0)
+            {
+                customer.Email = customerDocument.CustomerEmail;
+                customer.ShipVia = customerDocument.ShipVia;
+                customer.WebSiteURL = customerDocument.CompanyWebsite;
+                customer.CustomerSince = DateTime.Now;
+                customer.IsInactive = customerDocument.Disabled == 1;
+                AddAddresses(customer, customerDocument);
+                AddContacts(customer, customerDocument);
+            }
+            else
+            {
+                Logger.Information("Customer {@Name} did not have addresses so will not create a contact", customer.Name);
+                ContactList contactsList = customer.Contacts;
+                contactsList.Clear();
+            }
         }
 
         private void AddAddresses(Customer customer, CustomerDocument customerDocument)
