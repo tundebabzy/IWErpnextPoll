@@ -1,4 +1,5 @@
 ﻿using RestSharp;
+using RestSharp.Serialization.Json;
 using System;
 
 namespace IWErpnextPoll
@@ -14,7 +15,8 @@ namespace IWErpnextPoll
         {
             this.BaseUrl = baseUrl;
             _restClient = new RestClient(baseUrl);
-            _restClient.AddDefaultHeader("Authorization", string.Format("token {0}:{1}", _apiToken, _apiSecret));
+            _restClient.UseSerializer(() => new JsonSerializer {DateFormat = "yyyy-MM-dd"});
+            _restClient.AddDefaultHeader("Authorization", $"token {_apiToken}:{_apiSecret}");
         }
 
         public IRestResponse<CustomerResponse> GetCustomerDetails()
