@@ -223,7 +223,7 @@ namespace IWErpnextPoll
                 else
                 {
                     Logger.Debug("Session is initialized: {0}", Session != null);
-                    Logger.Debug("Session is active: {0}", Session.SessionActive);
+                    Logger.Debug("Session is active: {0}", Session != null && Session.SessionActive);
                     Logger.Debug("Company is initialized: {0}", Company != null);
                 }
             }
@@ -237,9 +237,9 @@ namespace IWErpnextPoll
 
         private CompanyIdentifier DiscoverCompany()
         {
-            bool predicate(CompanyIdentifier c) { return c.CompanyName == COMPANY_NAME; }
+            bool Predicate(CompanyIdentifier c) { return c.CompanyName == COMPANY_NAME; }
             CompanyIdentifierList companies = Session.CompanyList();
-            CompanyIdentifier company = companies.Find(predicate);
+            CompanyIdentifier company = companies.Find(Predicate);
             return company;
         }
 
@@ -275,36 +275,30 @@ namespace IWErpnextPoll
          */
         private void SendToQueue(SalesOrderResponse response)
         {
-            if (response != null && response.Message != null)
+            if (response?.Message == null) return;
+            foreach (var item in response.Message)
             {
-                foreach (var item in response.Message)
-                {
-                    this.queue.Enqueue(item);
-                }
+                this.queue.Enqueue(item);
             }
 
         }
 
         private void SendToQueue(PurchaseOrderResponse response)
         {
-            if (response != null && response.Message != null)
+            if (response?.Message == null) return;
+            foreach (var item in response.Message)
             {
-                foreach (var item in response.Message)
-                {
-                    this.queue.Enqueue(item);
-                }
+                this.queue.Enqueue(item);
             }
 
         }
 
         private void SendToQueue(SalesInvoiceResponse response)
         {
-            if (response != null && response.Message != null)
+            if (response?.Message == null) return;
+            foreach (var item in response.Message)
             {
-                foreach (var item in response.Message)
-                {
-                    this.queue.Enqueue(item);
-                }
+                this.queue.Enqueue(item);
             }
         }
 
