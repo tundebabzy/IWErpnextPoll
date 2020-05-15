@@ -5,7 +5,7 @@ namespace IWErpnextPoll
 {
     class LogSalesOrderHandler : AbstractDocumentHandler
     {
-        public LogSalesOrderHandler(Company c, ILogger logger) : base(c, logger) { }
+        public LogSalesOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation) : base(c, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {

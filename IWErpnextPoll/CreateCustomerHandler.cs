@@ -8,14 +8,14 @@ namespace IWErpnextPoll
     internal class CreateCustomerHandler : AbstractDocumentHandler
     {
         protected string CustomerName { get; set; }
-        public CreateCustomerHandler(Company company, ILogger logger) : base(company, logger) { }
+        public CreateCustomerHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {
             string customerName = (request as SalesOrderDocument)?.Customer;
             CustomerDocument customerDocument = customerName != null ? GetCustomerDetails(customerName) : null;
             Customer customer = customerDocument != null ? CreateNewCustomer(customerDocument) : null;
-            this.SetNext(customer != null ? new LogCustomerCreatedHandler(Company, Logger) : null);
+            this.SetNext(customer != null ? new LogCustomerCreatedHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(customerDocument);
         }
 

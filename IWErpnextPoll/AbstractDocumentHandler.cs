@@ -19,11 +19,14 @@ namespace IWErpnextPoll
 
         protected Dictionary<string, EntityReference<Vendor>> VendorReferences { get; set; }
 
+        protected EmployeeInformation EmployeeInformation { get; set; }
 
-        public AbstractDocumentHandler(Company c, ILogger logger)
+
+        public AbstractDocumentHandler(Company c, ILogger logger, EmployeeInformation employeeInformation)
         {
             Company = c;
             Logger = logger;
+            EmployeeInformation = employeeInformation;
             CustomerReferences = CustomerToReferenceDictionary();
             VendorReferences = VendorToReferenceDictionary();
             ItemReferences = InventoryItemToReferenceDictionary();

@@ -5,12 +5,12 @@ namespace IWErpnextPoll
 {
     class DocumentTypeHandler : AbstractDocumentHandler
     {
-        public DocumentTypeHandler(Company c, ILogger logger) : base(c, logger) { }
+        public DocumentTypeHandler(Company c, ILogger logger, EmployeeInformation employeeInformation) : base(c, logger, employeeInformation){ }
         public override object Handle(object request)
         {
             if ((request as SalesOrderDocument) != null && (request as SalesOrderDocument).Doctype == "Sales Order")
             {
-                SetNext(new CreateSalesOrderHandler(Company, Logger));
+                SetNext(new CreateSalesOrderHandler(Company, Logger, EmployeeInformation));
             }
             else if ((request as PurchaseOrderDocument) != null && (request as PurchaseOrderDocument).Doctype == "Purchase Order")
             {
@@ -18,7 +18,7 @@ namespace IWErpnextPoll
             }
             else if ((request as SalesInvoiceDocument) != null && (request as SalesInvoiceDocument).Doctype == "Sales Invoice")
             {
-                SetNext(new CreateSalesInvoiceHandler(Company, Logger));
+                SetNext(new CreateSalesInvoiceHandler(Company, Logger, EmployeeInformation));
             }
             else
             {

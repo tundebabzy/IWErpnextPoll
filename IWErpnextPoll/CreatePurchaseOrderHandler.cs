@@ -7,13 +7,13 @@ namespace IWErpnextPoll
 {
     internal class CreatePurchaseOrderHandler : AbstractDocumentHandler
     {
-        public CreatePurchaseOrderHandler(Company c, ILogger logger) : base(c, logger) { }
+        public CreatePurchaseOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
         public override object Handle(object request)
         {
             PurchaseOrder purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
             if (GetNext() == null)
             {
-                this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger) : null);
+                this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger, EmployeeInformation) : null);
             }
             return base.Handle(request);
         }
@@ -44,7 +44,7 @@ namespace IWErpnextPoll
                 {
                     purchaseOrder = null;
                     Logger.Debug("Vendor {@Name} in {@Document} was not found", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
-                    SetNext(new CreateSupplierHandler(Company, Logger));
+                    SetNext(new CreateSupplierHandler(Company, Logger, EmployeeInformation));
                     Logger.Debug("Customer {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)

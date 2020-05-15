@@ -3,6 +3,7 @@ using Sage.Peachtree.API;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Timers;
@@ -18,6 +19,7 @@ namespace IWErpnextPoll
         public static PeachtreeSession Session { get; set; }
         public static Company Company { get; set; }
         public ConcurrentQueue<object> queue = new ConcurrentQueue<object>();
+        private EmployeeInformation EmployeeInformation { get; } = new EmployeeInformation();
         private void OpenCompany(CompanyIdentifier companyId)
         {
             // Request authorization from Sage 50 for our third-party application.
@@ -30,6 +32,7 @@ namespace IWErpnextPoll
                 {
                     Company = Session.Open(companyId);
                     Logger.Information("Authorization granted");
+                    InitSalesRepresentativeList();
                 }
                 else // otherwise, display a message to user that there was insufficient access.
                 {
@@ -57,12 +60,16 @@ namespace IWErpnextPoll
                 Logger.Debug(e, e.Message);
             }
         }
+
+        private void InitSalesRepresentativeList()
+        {
+            EmployeeInformation.Logger = Logger;
+            EmployeeInformation.Load(Company);
+        }
+
         private void CloseCompany()
         {
-            if (Company != null)
-            {
-                Company.Close();
-            }
+            Company?.Close();
         }
         public void OpenSession(string appKeyID)
         {
@@ -157,7 +164,7 @@ namespace IWErpnextPoll
         {
             if (!queue.IsEmpty && Company != null && !Company.IsClosed)
             {
-                DocumentTypeHandler handler = new DocumentTypeHandler(Company, Logger);
+                DocumentTypeHandler handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
                 while (queue.TryDequeue(out object document) && Session.SessionActive)
                 {
                     handler.Handle(document);

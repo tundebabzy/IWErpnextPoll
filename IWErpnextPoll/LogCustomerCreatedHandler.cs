@@ -6,7 +6,7 @@ namespace IWErpnextPoll
 {
     internal class LogCustomerCreatedHandler : AbstractDocumentHandler
     {
-        public LogCustomerCreatedHandler(Company company, ILogger logger) : base(company, logger) { }
+        public LogCustomerCreatedHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {

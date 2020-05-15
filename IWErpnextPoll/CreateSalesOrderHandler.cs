@@ -7,7 +7,7 @@ namespace IWErpnextPoll
 {
     class CreateSalesOrderHandler : AbstractDocumentHandler
     {
-        public CreateSalesOrderHandler(Company c, ILogger logger) : base(c, logger) { }
+        public CreateSalesOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
 
 
         public override object Handle(object request)
@@ -15,7 +15,7 @@ namespace IWErpnextPoll
             SalesOrder salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
             if (GetNext() == null)
             {
-                this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger) : null);
+                this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger, EmployeeInformation) : null);
             }
             return base.Handle(request);
         }
@@ -38,6 +38,7 @@ namespace IWErpnextPoll
                     salesOrder.ShipByDate = document.DeliveryDate;
                     salesOrder.ShipVia = document.ShippingMethod;
                     salesOrder.TermsDescription = document.PaymentTermsTemplate;
+                    AddSalesRep(salesOrder, document);
 
                     foreach (var line in document.Items)
                     {
@@ -52,7 +53,7 @@ namespace IWErpnextPoll
                     // push to a handler to create this missing customer
                     Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
                     salesOrder = null;
-                    SetNext(new CreateCustomerHandler(Company, Logger));
+                    SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
                     Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
@@ -77,6 +78,13 @@ namespace IWErpnextPoll
                 }
             }
             return salesOrder;
+        }
+
+        private void AddSalesRep(SalesOrder salesOrder, SalesOrderDocument document)
+        {
+            if (document.SalesRep == null) return;
+            EntityReference<Employee> salesRep = EmployeeInformation.Data[document.SalesRep];
+            salesOrder.SalesRepresentativeReference = salesRep;
         }
 
         /**

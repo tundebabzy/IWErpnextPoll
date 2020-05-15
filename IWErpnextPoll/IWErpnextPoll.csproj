@@ -109,6 +109,7 @@
     <Compile Include="CustomerCommand.cs" />
     <Compile Include="CustomerDocument.cs" />
     <Compile Include="CustomerResponse.cs" />
+    <Compile Include="EmployeeInformation.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogCustomerCreatedHandler.cs" />
     <Compile Include="LogPurchaseOrderHandler.cs" />

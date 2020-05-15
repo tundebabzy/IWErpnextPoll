@@ -8,14 +8,14 @@ namespace IWErpnextPoll
 {
     internal class CreateSupplierHandler : AbstractDocumentHandler
     {
-        public CreateSupplierHandler(Company company, ILogger logger) : base(company, logger) { }
+        public CreateSupplierHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {
             string supplierName = (request as PurchaseOrderDocument).Supplier;
             SupplierDocument supplierDocument = GetSupplierDetails(supplierName);
             Vendor supplier = CreateNewSupplier(supplierDocument);
-            this.SetNext(supplier != null ? new LogSupplierCreatedHandler(Company, Logger) : null);
+            this.SetNext(supplier != null ? new LogSupplierCreatedHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(supplierDocument);
         }
 

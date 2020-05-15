@@ -7,12 +7,12 @@ namespace IWErpnextPoll
 {
     internal class CreateSalesInvoiceHandler : AbstractDocumentHandler
     {
-        public CreateSalesInvoiceHandler(Company company, ILogger logger) : base(company, logger) { }
+        public CreateSalesInvoiceHandler(Company company, ILogger logger, EmployeeInformation employeeInformation=null) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {
             SalesInvoice salesInvoice = CreateNewSalesInvoice(request as SalesInvoiceDocument);
-            this.SetNext(salesInvoice != null ? new LogSalesInvoiceHandler(Company, Logger) : null);
+            this.SetNext(salesInvoice != null ? new LogSalesInvoiceHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(request);
         }
 
@@ -46,7 +46,7 @@ namespace IWErpnextPoll
                 {
                     Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
                     salesInvoice = null;
-                    SetNext(new CreateCustomerHandler(Company, Logger));
+                    SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
                     Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
