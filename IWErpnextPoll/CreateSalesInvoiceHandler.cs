@@ -33,6 +33,7 @@ namespace IWErpnextPoll
                     salesInvoice.ReferenceNumber = document.Name;
                     salesInvoice.ShipVia = document.ShippingMethod;
                     salesInvoice.TermsDescription = document.PaymentTermsTemplate;
+                    AddSalesRep(salesInvoice, document);
 
                     foreach (var line in document.Items)
                     {
@@ -70,6 +71,13 @@ namespace IWErpnextPoll
                 }
             }
             return salesInvoice;
+        }
+
+        private void AddSalesRep(SalesInvoice salesInvoice, SalesInvoiceDocument document)
+        {
+            if (document.SalesRep == null) return;
+            EntityReference<Employee> salesRep = EmployeeInformation.Data[document.SalesRep];
+            salesInvoice.SalesRepresentativeReference = salesRep;
         }
 
         private void AddLine(SalesInvoice salesInvoice, SalesInvoiceItem line)
