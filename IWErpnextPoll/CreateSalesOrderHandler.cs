@@ -38,6 +38,7 @@ namespace IWErpnextPoll
                     salesOrder.ShipByDate = document.DeliveryDate;
                     salesOrder.ShipVia = document.ShippingMethod;
                     salesOrder.TermsDescription = document.PaymentTermsTemplate;
+                    salesOrder.CustomerPurchaseOrderNumber = document.PoNo;
                     AddSalesRep(salesOrder, document);
 
                     foreach (var line in document.Items)

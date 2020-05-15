@@ -33,6 +33,7 @@ namespace IWErpnextPoll
                     salesInvoice.ReferenceNumber = document.Name;
                     salesInvoice.ShipVia = document.ShippingMethod;
                     salesInvoice.TermsDescription = document.PaymentTermsTemplate;
+                    salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
                     AddSalesRep(salesInvoice, document);
 
                     foreach (var line in document.Items)
