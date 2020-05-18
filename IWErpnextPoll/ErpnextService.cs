@@ -177,7 +177,7 @@ namespace IWErpnextPoll
         {
             Timer timer = new Timer
             {
-                Interval = 120000
+                Interval = 3600000
             };
             timer.Elapsed += new ElapsedEventHandler(this.OnTimer);
             timer.Start();
