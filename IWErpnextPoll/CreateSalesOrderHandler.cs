@@ -40,6 +40,7 @@ namespace IWErpnextPoll
                     salesOrder.TermsDescription = document.PaymentTermsTemplate;
                     salesOrder.CustomerPurchaseOrderNumber = document.PoNo;
                     AddSalesRep(salesOrder, document);
+                    AddShipAddress(salesOrder);
 
                     foreach (var line in document.Items)
                     {
@@ -79,6 +80,19 @@ namespace IWErpnextPoll
                 }
             }
             return salesOrder;
+        }
+
+        private void AddShipAddress(SalesOrder salesOrder)
+        {
+            Customer customer = Company.Factories.CustomerFactory.Load(salesOrder.CustomerReference);
+            Contact contact = customer.ShipToContact;
+            salesOrder.ShipToAddress.Name = customer.Name;
+            salesOrder.ShipToAddress.Address.Zip = contact.Address.Zip;
+            salesOrder.ShipToAddress.Address.Address1 = contact.Address.Address1;
+            salesOrder.ShipToAddress.Address.Address2 = contact.Address.Address2;
+            salesOrder.ShipToAddress.Address.City = contact.Address.City;
+            salesOrder.ShipToAddress.Address.State = contact.Address.State;
+            salesOrder.ShipToAddress.Address.Country = contact.Address.Country;
         }
 
         private void AddSalesRep(SalesOrder salesOrder, SalesOrderDocument document)
