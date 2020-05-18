@@ -207,7 +207,7 @@ namespace IWErpnextPoll
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
             Logger.Information("Timer callback called");
-            if (_canRequest)
+            if (_canRequest && (DateTime.Now.Hour > 17 || DateTime.Now.Hour < 6))
             {
                 if (Company == null || Company.IsClosed)
                 {
