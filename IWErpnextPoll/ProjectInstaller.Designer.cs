@@ -42,6 +42,8 @@
             this.serviceInstaller1.Description = "Service that polls an ERPNext installation for Sage 50 Accounting";
             this.serviceInstaller1.DisplayName = "Industrial Webworks ERPNext Service";
             this.serviceInstaller1.ServiceName = "IWErpnextPollingService";
+            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            this.serviceInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             // 
             // ProjectInstaller
             // 

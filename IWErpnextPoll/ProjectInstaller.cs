@@ -9,5 +9,10 @@ namespace IWErpnextPoll
         {
             InitializeComponent();
         }
+
+        private void serviceInstaller1_AfterInstall(object sender, System.Configuration.Install.InstallEventArgs e)
+        {
+
+        }
     }
 }
