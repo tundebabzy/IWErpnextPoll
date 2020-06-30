@@ -177,7 +177,7 @@ namespace IWErpnextPoll
         {
             Timer timer = new Timer
             {
-                Interval = 3600000
+                Interval = 600000
             };
             timer.Elapsed += new ElapsedEventHandler(this.OnTimer);
             timer.Start();
@@ -207,7 +207,8 @@ namespace IWErpnextPoll
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
             Logger.Information("Timer callback called");
-            if (_canRequest && (DateTime.Now.Hour > 17 || DateTime.Now.Hour < 6))
+            // if (_canRequest && (DateTime.Now.Hour > 17 || DateTime.Now.Hour < 6))
+            if (_canRequest)
             {
                 if (Company == null || Company.IsClosed)
                 {
