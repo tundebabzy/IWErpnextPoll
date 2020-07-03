@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.1.0" Manufacturer="IWW" UpgradeCode="ccc3c2fe-d20f-45ce-b978-4dc7c84ce6c8">
+	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.2.0" Manufacturer="IWW" UpgradeCode="ccc3c2fe-d20f-45ce-b978-4dc7c84ce6c8">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -39,7 +39,7 @@
 			</Component>
 			<Component Id="ProductComponent">
 				<File Source="$(var.IWErpnextPoll.TargetPath)" />
-				<ServiceInstall Id="ServiceInstaller" Name="IWErpnextPoll" Type="ownProcess" Vital="yes" Description="A background service that imports sales orders and purchase orders from ERPNext into Sage 50." Start="demand" Account=".\LocalSystem" ErrorControl="normal" Interactive="no" />
+				<ServiceInstall Id="ServiceInstaller" Name="IWErpnextPoll" Type="ownProcess" Vital="yes" Description="Custom ERPNext to Sage 50 connector." Start="auto" Account=".\LocalSystem" ErrorControl="normal" Interactive="no" />
 				<ServiceControl Id="StartService" Name="IWErpnextPoll" Stop="both" Start="install" Remove="uninstall" Wait="yes" />
 			</Component>
 		</ComponentGroup>
