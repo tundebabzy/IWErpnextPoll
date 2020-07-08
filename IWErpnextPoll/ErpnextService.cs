@@ -73,16 +73,35 @@ namespace IWErpnextPoll
         }
         public void OpenSession(string appKeyID)
         {
-            if (Session != null)
+            try
             {
-                CloseSession();
+                if (Session != null)
+                {
+                    CloseSession();
+                }
+
+                // create new session                                
+                Session = new PeachtreeSession();
+
+                // start the new session
+                Session.Begin(appKeyID);
             }
-
-            // create new session                                
-            Session = new PeachtreeSession();
-
-            // start the new session
-            Session.Begin(appKeyID);
+            catch (Sage.Peachtree.API.Exceptions.ApplicationIdentifierExpiredException e)
+            {
+                Logger.Debug(e, "Your application identifier has expired.");
+            }
+            catch (Sage.Peachtree.API.Exceptions.ApplicationIdentifierRejectedException e)
+            {
+                Logger.Debug(e, "Your application identifier was rejected.");
+            }
+            catch (Sage.Peachtree.API.Exceptions.PeachtreeException e)
+            {
+                Logger.Debug(e, e.Message);
+            }
+            catch (Exception e)
+            {
+                Logger.Debug(e, e.Message);
+            }
         }
 
         // Closes current Sage 50 Session
