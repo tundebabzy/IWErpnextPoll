@@ -22,7 +22,7 @@ namespace IWErpnextPoll
         protected EmployeeInformation EmployeeInformation { get; set; }
 
 
-        public AbstractDocumentHandler(Company c, ILogger logger, EmployeeInformation employeeInformation)
+        protected AbstractDocumentHandler(Company c, ILogger logger, EmployeeInformation employeeInformation)
         {
             Company = c;
             Logger = logger;
@@ -34,18 +34,22 @@ namespace IWErpnextPoll
 
         private Dictionary<string, EntityReference<Vendor>> VendorToReferenceDictionary()
         {
-            Dictionary<string, EntityReference<Vendor>> dictionary = new Dictionary<string, EntityReference<Vendor>>();
-            VendorList vendorList = Company.Factories.VendorFactory.List();
+            var dictionary = new Dictionary<string, EntityReference<Vendor>>();
+            var vendorList = Company.Factories.VendorFactory.List();
             vendorList.Load();
             foreach (var vendor in vendorList)
             {
                 try
                 {
                     dictionary.Add(vendor.Name, vendor.Key);
+                    Logger.Debug("Added vendor reference. Key -> {0}, Value -> {1}", vendor.Name, vendor.Key);
+                    ;
                 }
                 catch (ArgumentException e)
                 {
-                    Logger.Debug(e, e.Message);
+                    Logger.Debug(e.Message);
+                    Logger.Debug("Key was -> {0}, value was {1}", vendor.Name, vendor.Key);
+                    Logger.Debug("Moving on.");
                 }
             }
 
@@ -54,31 +58,45 @@ namespace IWErpnextPoll
 
         private Dictionary<string, EntityReference> InventoryItemToReferenceDictionary()
         {
-            Dictionary<string, EntityReference> keyValuePairs = new Dictionary<string, EntityReference>();
-            InventoryItemList inventoryItems = Company.Factories.InventoryItemFactory.List();
+            var keyValuePairs = new Dictionary<string, EntityReference>();
+            var inventoryItems = Company.Factories.InventoryItemFactory.List();
             inventoryItems.Load();
             foreach (var item in inventoryItems)
             {
-                keyValuePairs.Add(item.ID, item.Key);
+                try
+                {
+                    keyValuePairs.Add(item.ID, item.Key);
+                    Logger.Debug("Inventory reference was added. Key -> {0}, Value -> {1}", item.ID, item.Key);
+                    ;
+                }
+                catch (ArgumentException e)
+                {
+                    Logger.Debug(e.Message);
+                    Logger.Debug("Key was -> {0}, value was {1}", item.ID, item.Key);
+                    Logger.Debug("Moving on.");
+                }
             }
             return keyValuePairs;
         }
 
-        public Dictionary<string, EntityReference<Customer>> CustomerToReferenceDictionary()
+        private Dictionary<string, EntityReference<Customer>> CustomerToReferenceDictionary()
         {
-            Dictionary<string, EntityReference<Customer>> keyValuePairs = new Dictionary<string, EntityReference<Customer>>();
-            CustomerList customers = Company.Factories.CustomerFactory.List();
+            var keyValuePairs = new Dictionary<string, EntityReference<Customer>>();
+            var customers = Company.Factories.CustomerFactory.List();
             customers.Load();
             foreach (var customer in customers)
             {
                 try
                 {
                     keyValuePairs.Add(customer.Name, customer.Key);
+                    Logger.Debug("Added customer reference. Key -> {0}, value -> {1}", customer.ID, customer.Key);
                 }
                 catch (ArgumentException e)
                 {
                     // already in queue so pass
-                    Logger.Debug(e, e.Message);
+                    Logger.Debug(e.Message);
+                    Logger.Debug("Key was -> {0}, value was {1}", customer.ID, customer.Key);
+                    Logger.Debug("Moving on.");
                 }
             }
             return keyValuePairs;
@@ -90,21 +108,14 @@ namespace IWErpnextPoll
             return handler;
         }
 
-        public IDocumentHandler GetNext()
+        protected IDocumentHandler GetNext()
         {
-            return this._nextHandler;
+            return _nextHandler;
         }
 
         public virtual object Handle(object request)
         {
-            if (this._nextHandler != null)
-            {
-                return this._nextHandler.Handle(request);
-            }
-            else
-            {
-                return null;
-            }
+            return _nextHandler?.Handle(request);
         }
     }
 }

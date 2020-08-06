@@ -5,31 +5,31 @@ using System;
 
 namespace IWErpnextPoll
 {
-    internal class CreateCustomerHandler : AbstractDocumentHandler
+    internal class CreateCustomerHandler : AbstractDocumentHandler, IResourceAddress
     {
         protected string CustomerName { get; set; }
         public CreateCustomerHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {
-            string customerName = (request as SalesOrderDocument)?.Customer;
-            CustomerDocument customerDocument = customerName != null ? GetCustomerDetails(customerName) : null;
-            Customer customer = customerDocument != null ? CreateNewCustomer(customerDocument) : null;
+            var customerName = (request as SalesOrderDocument)?.Customer;
+            var customerDocument = customerName != null ? GetCustomerDetails(customerName) : null;
+            var customer = customerDocument != null ? CreateNewCustomer(customerDocument) : null;
             this.SetNext(customer != null ? new LogCustomerCreatedHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(customerDocument);
         }
 
         private CustomerDocument GetCustomerDetails(string customerName)
         {
-            CustomerCommand receiver = new CustomerCommand(customerName, $"https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.customer.get_customer_details?cn={customerName}");
-            IRestResponse<CustomerResponse> document = receiver.Execute();
+            var receiver = new CustomerCommand(customerName, $"{GetResourceServerAddress()}?cn={CustomerName}");
+            var document = receiver.Execute();
 
             return document.Data.Message;
         }
 
         private Customer CreateNewCustomer(CustomerDocument customerDocument)
         {
-            Customer customer = Company.Factories.CustomerFactory.Create();
+            var customer = Company.Factories.CustomerFactory.Create();
             if (customer == null)
             {
                 Logger.Information("Customer data was null when trying to create Sage customer");
@@ -157,6 +157,11 @@ namespace IWErpnextPoll
                     customer.ShipToContact.Title = c.Salutation;
                 }
             }
+        }
+
+        public string GetResourceServerAddress()
+        {
+            return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
         }
     }
 }

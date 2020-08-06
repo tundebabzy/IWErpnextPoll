@@ -12,7 +12,7 @@ namespace IWErpnextPoll
 
         public override object Handle(object request)
         {
-            SalesOrder salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
+            var salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
             if (GetNext() == null)
             {
                 this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger, EmployeeInformation) : null);
@@ -22,7 +22,7 @@ namespace IWErpnextPoll
 
         private SalesOrder CreateNewSalesOrder(SalesOrderDocument document)
         {
-            SalesOrder salesOrder = Company.Factories.SalesOrderFactory.Create();
+            var salesOrder = Company.Factories.SalesOrderFactory.Create();
             if (salesOrder != null)
             {
                 try
@@ -84,8 +84,8 @@ namespace IWErpnextPoll
 
         private void AddShipAddress(SalesOrder salesOrder)
         {
-            Customer customer = Company.Factories.CustomerFactory.Load(salesOrder.CustomerReference);
-            Contact contact = customer.ShipToContact;
+            var customer = Company.Factories.CustomerFactory.Load(salesOrder.CustomerReference);
+            var contact = customer.ShipToContact;
             salesOrder.ShipToAddress.Name = customer.Name;
             salesOrder.ShipToAddress.Address.Zip = contact.Address.Zip;
             salesOrder.ShipToAddress.Address.Address1 = contact.Address.Address1;
@@ -98,7 +98,7 @@ namespace IWErpnextPoll
         private void AddSalesRep(SalesOrder salesOrder, SalesOrderDocument document)
         {
             if (document.SalesRep == null) return;
-            EntityReference<Employee> salesRep = EmployeeInformation.Data[document.SalesRep];
+            var salesRep = EmployeeInformation.Data[document.SalesRep];
             salesOrder.SalesRepresentativeReference = salesRep;
         }
 
@@ -118,9 +118,9 @@ namespace IWErpnextPoll
             }
             else if (line.ForHandling != 1)
             {
-                SalesOrderLine _ = salesOrder.AddLine();
-                EntityReference itemReference = ItemReferences[line.ItemCode];
-                ServiceItem item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
+                var _ = salesOrder.AddLine();
+                var itemReference = ItemReferences[line.ItemCode];
+                var item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
                 _.AccountReference = item.SalesAccountReference;
                 _.Quantity = line.Qty;
                 _.UnitPrice = line.Rate;

@@ -6,22 +6,22 @@ using System.Collections.Generic;
 
 namespace IWErpnextPoll
 {
-    internal class CreateSupplierHandler : AbstractDocumentHandler
+    internal class CreateSupplierHandler : AbstractDocumentHandler, IResourceAddress
     {
         public CreateSupplierHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
 
         public override object Handle(object request)
         {
-            string supplierName = (request as PurchaseOrderDocument).Supplier;
-            SupplierDocument supplierDocument = GetSupplierDetails(supplierName);
-            Vendor supplier = CreateNewSupplier(supplierDocument);
+            var supplierName = (request as PurchaseOrderDocument)?.Supplier;
+            var supplierDocument = GetSupplierDetails(supplierName);
+            var supplier = CreateNewSupplier(supplierDocument);
             this.SetNext(supplier != null ? new LogSupplierCreatedHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(supplierDocument);
         }
 
         private Vendor CreateNewSupplier(SupplierDocument supplierDocument)
         {
-            Vendor supplier = Company.Factories.VendorFactory.Create();
+            var supplier = Company.Factories.VendorFactory.Create();
             if (supplierDocument != null && supplier != null)
             {
                 try
@@ -78,10 +78,16 @@ namespace IWErpnextPoll
 
         private SupplierDocument GetSupplierDetails(string supplierName)
         {
-            SupplierCommand receiver = new SupplierCommand(supplierName, $"https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.supplier.get_supplier_details?cn={supplierName}");
-            IRestResponse<SupplierResponse> document = receiver.Execute();
+            var receiver = new SupplierCommand(supplierName, $"{GetResourceServerAddress()}?cn={supplierName}");
+            var document = receiver.Execute();
 
             return document.Data.Message;
+        }
+
+        public string GetResourceServerAddress()
+        {
+            return
+                $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.supplier.get_supplier_details";
         }
     }
 }

@@ -15,8 +15,8 @@ namespace IWErpnextPoll
 
         private void LogSalesOrder(SalesOrderDocument document)
         {
-            string url = "https://portal.electrocomptr.com/api/resource/Sage 50 Export Log";
-            Resource resource = new Resource(url);
+            var url = $"{Constants.ServerUrl}/api/resource/Sage 50 Export Log";
+            var resource = new Resource(url);
             resource.LogSalesOrder(document);
         }
     }

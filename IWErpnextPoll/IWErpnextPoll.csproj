@@ -77,6 +77,7 @@
     <Reference Include="Sage.Peachtree.API, Version=2020.2.0.219, Culture=neutral, PublicKeyToken=d06c16dde04d83e4, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Sage\Peachtree\API\Sage.Peachtree.API.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.9.0\lib\net46\Serilog.dll</HintPath>
@@ -101,6 +102,7 @@
   <ItemGroup>
     <Compile Include="AbstractDocumentHandler.cs" />
     <Compile Include="AddressDocument.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="ContactDocument.cs" />
     <Compile Include="CreateCustomerHandler.cs" />
     <Compile Include="CreatePurchaseOrderHandler.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="CustomerDocument.cs" />
     <Compile Include="CustomerResponse.cs" />
     <Compile Include="EmployeeInformation.cs" />
+    <Compile Include="IResourceAddress.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogCustomerCreatedHandler.cs" />
     <Compile Include="LogPurchaseOrderHandler.cs" />

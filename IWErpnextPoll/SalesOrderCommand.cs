@@ -13,7 +13,7 @@ namespace IWErpnextPoll
 
         public IRestResponse<SalesOrderResponse> Execute()
         {
-            IRestResponse<SalesOrderResponse> documents = _receiver.GetSalesOrderList();
+            var documents = _receiver.GetSalesOrderList();
             return documents;
         }
     }

@@ -5,6 +5,8 @@
         public decimal Amount { get; set; }
         public string Carrier { get; set; }
         public string DateCode { get; set; }
+        public decimal DeliveredQty { get; set; }
+        public string DeliveryNote { get; set; }
         public string Description { get; set; }
         public decimal DiscountAmount { get; set; }
         public string Doctype { get; set; }
@@ -20,6 +22,7 @@
         public string Pitch { get; set; }
         public decimal Qty { get; set; }
         public decimal Rate { get; set; }
+        public string SalesOrder { get; set; }
         public decimal UnitPrice { get; set; }
         public string Uom { get; set; }
         public string Warehouse { get; set; }

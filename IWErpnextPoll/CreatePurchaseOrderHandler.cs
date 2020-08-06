@@ -5,12 +5,12 @@ using System.Collections.Generic;
 
 namespace IWErpnextPoll
 {
-    internal class CreatePurchaseOrderHandler : AbstractDocumentHandler
+    internal class CreatePurchaseOrderHandler : AbstractDocumentHandler, IResourceAddress
     {
         public CreatePurchaseOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
         public override object Handle(object request)
         {
-            PurchaseOrder purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
+            var purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
             if (GetNext() == null)
             {
                 this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger, EmployeeInformation) : null);
@@ -20,7 +20,7 @@ namespace IWErpnextPoll
 
         private PurchaseOrder CreateNewPurchaseOrder(PurchaseOrderDocument purchaseOrderDocument)
         {
-            PurchaseOrder purchaseOrder = Company.Factories.PurchaseOrderFactory.Create();
+            var purchaseOrder = Company.Factories.PurchaseOrderFactory.Create();
             if (purchaseOrder != null)
             {
                 try
@@ -71,15 +71,20 @@ namespace IWErpnextPoll
 
         private void AddLine(PurchaseOrder purchaseOrderDocument, PurchaseOrderItem line)
         {
-            PurchaseOrderLine _ = purchaseOrderDocument.AddLine();
-            EntityReference itemReference = ItemReferences[line.ItemCode];
-            StockItem stockItem = Company.Factories.StockItemFactory.Load(itemReference as EntityReference<StockItem>);
+            var _ = purchaseOrderDocument.AddLine();
+            var itemReference = ItemReferences[line.ItemCode];
+            var stockItem = Company.Factories.StockItemFactory.Load(itemReference as EntityReference<StockItem>);
             _.AccountReference = stockItem.COGSAccountReference;
             _.Quantity = line.Qty;
             _.UnitPrice = line.Rate;
             _.Amount = line.Amount;
             _.Description = line.Description;
             _.InventoryItemReference = itemReference;
+        }
+
+        public string GetResourceServerAddress()
+        {
+            throw new NotImplementedException();
         }
     }
 }

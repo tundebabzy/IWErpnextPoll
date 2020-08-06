@@ -106,7 +106,7 @@ namespace IWErpnextPoll
 
         // Closes current Sage 50 Session
         //
-        public void CloseSession()
+        private void CloseSession()
         {
             if (Session != null && Session.SessionActive)
             {
@@ -147,8 +147,8 @@ namespace IWErpnextPoll
 
         private void SetupLogger()
         {
-            String path = @"%PROGRAMDATA%\IWERPNextPoll\Logs\log-.txt";
-            String logFilePath = Environment.ExpandEnvironmentVariables(path);
+            const string path = @"%PROGRAMDATA%\IWERPNextPoll\Logs\log-.txt";
+            var logFilePath = Environment.ExpandEnvironmentVariables(path);
             Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
@@ -160,6 +160,7 @@ namespace IWErpnextPoll
             _canRequest = true;
             Logger.Information("Service continued");
             Logger.Debug("State = {0}", _canRequest);
+            this.SetServiceStatus(ServiceState.SERVICE_RUNNING);
         }
 
         protected override void OnPause()
@@ -167,6 +168,7 @@ namespace IWErpnextPoll
             _canRequest = false;
             Logger.Information("Service paused");
             Logger.Debug("State = {0}", _canRequest);
+            this.SetServiceStatus(ServiceState.SERVICE_PAUSED);
         }
 
         protected override void OnStart(string[] args)
@@ -176,27 +178,25 @@ namespace IWErpnextPoll
             Logger.Debug("State = {0}", _canRequest);
             OpenSession(APPLICATION_ID);
             this.StartTimer();
-            this.SetServiceStatus();
+            this.SetServiceStatus(ServiceState.SERVICE_RUNNING);
         }
 
         private void ClearQueue()
         {
-            if (!queue.IsEmpty && Company != null && !Company.IsClosed)
+            if (queue.IsEmpty || Company == null || Company.IsClosed) return;
+            var handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
+            while (queue.TryDequeue(out object document) && Session.SessionActive)
             {
-                DocumentTypeHandler handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
-                while (queue.TryDequeue(out object document) && Session.SessionActive)
-                {
-                    handler.Handle(document);
-                }
+                handler.Handle(document);
             }
         }
 
 
         private void StartTimer()
         {
-            Timer timer = new Timer
+            var timer = new Timer
             {
-                Interval = 600000
+                Interval = 120000
             };
             timer.Elapsed += new ElapsedEventHandler(this.OnTimer);
             timer.Start();
@@ -208,11 +208,11 @@ namespace IWErpnextPoll
          * Update the service state to Running.
          * 
          */
-        private void SetServiceStatus()
+        private void SetServiceStatus(ServiceState serviceState)
         {
-            ServiceStatus serviceStatus = new ServiceStatus
+            var serviceStatus = new ServiceStatus
             {
-                dwCurrentState = ServiceState.SERVICE_RUNNING
+                dwCurrentState = serviceState
             };
             SetServiceStatus(this.ServiceHandle, ref serviceStatus);
         }
@@ -227,25 +227,27 @@ namespace IWErpnextPoll
         {
             Logger.Information("Timer callback called");
             // if (_canRequest && (DateTime.Now.Hour > 17 || DateTime.Now.Hour < 6))
-            if (_canRequest)
+            if (!_canRequest)
             {
-                if (Company == null || Company.IsClosed)
+                Logger.Debug("Service cannot request: {0}", _canRequest);
+                return;
+            };
+            if (Company == null || Company.IsClosed)
+            {
+                DiscoverAndOpenCompany();
+            }
+            if (Session != null && Session.SessionActive && Company != null)
+            {
+                if (!Company.IsClosed)
                 {
-                    DiscoverAndOpenCompany();
+                    GetDocumentsThenProcessQueue();
                 }
-                if (Session != null && Session.SessionActive && Company != null)
-                {
-                    if (!Company.IsClosed)
-                    {
-                        GetDocumentsThenProcessQueue();
-                    }
-                }
-                else
-                {
-                    Logger.Debug("Session is initialized: {0}", Session != null);
-                    Logger.Debug("Session is active: {0}", Session != null && Session.SessionActive);
-                    Logger.Debug("Company is initialized: {0}", Company != null);
-                }
+            }
+            else
+            {
+                Logger.Debug("Session is initialized: {0}", Session != null);
+                Logger.Debug("Session is active: {0}", Session != null && Session.SessionActive);
+                Logger.Debug("Company is initialized: {0}", Company != null);
             }
         }
 
@@ -258,8 +260,8 @@ namespace IWErpnextPoll
         private CompanyIdentifier DiscoverCompany()
         {
             bool Predicate(CompanyIdentifier c) { return c.CompanyName == COMPANY_NAME; }
-            CompanyIdentifierList companies = Session.CompanyList();
-            CompanyIdentifier company = companies.Find(Predicate);
+            var companies = Session.CompanyList();
+            var company = companies.Find(Predicate);
             return company;
         }
 
@@ -278,16 +280,16 @@ namespace IWErpnextPoll
          */
         private void GetDocuments()
         {
-            PurchaseOrderCommand purchaseOrderCommand = new PurchaseOrderCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.purchase_order.get_purchase_orders_for_sage");
-            SalesOrderCommand salesOrderCommand = new SalesOrderCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.sales_order.get_sales_orders_for_sage");
-            SalesInvoiceCommand salesInvoiceCommand = new SalesInvoiceCommand(serverURL: "https://portal.electrocomptr.com/api/method/electro_erpnext.utilities.sales_invoice.get_sales_invoices_for_sage");
+            var purchaseOrderCommand = new PurchaseOrderCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.purchase_order.get_purchase_orders_for_sage");
+            var salesOrderCommand = new SalesOrderCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_order.get_sales_orders_for_sage");
+            var salesInvoiceCommand = new SalesInvoiceCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_invoice.get_sales_invoices_for_sage");
 
-            IRestResponse<SalesOrderResponse> salesOrders = salesOrderCommand.Execute();
-            IRestResponse<PurchaseOrderResponse> purchaseOrders = purchaseOrderCommand.Execute();
-            IRestResponse<SalesInvoiceResponse> salesInvoices = salesInvoiceCommand.Execute();
-            this.SendToQueue(salesOrders.Data);
-            this.SendToQueue(purchaseOrders.Data);
-            this.SendToQueue(salesInvoices.Data);
+            var salesOrders = salesOrderCommand.Execute();
+            var purchaseOrders = purchaseOrderCommand.Execute();
+            var salesInvoices = salesInvoiceCommand.Execute();
+            SendToQueue(salesOrders.Data);
+            SendToQueue(purchaseOrders.Data);
+            SendToQueue(salesInvoices.Data);
         }
 
         /**
@@ -329,6 +331,7 @@ namespace IWErpnextPoll
             CloseSession();
 
             Logger.Information("Service stopped");
+            this.SetServiceStatus(ServiceState.SERVICE_STOPPED);
         }
 
         [DllImport("advapi32.dll", SetLastError = true)]

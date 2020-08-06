@@ -29,6 +29,7 @@ namespace IWErpnextPoll
         public string ReceivingData { get; set; }
         public string RoundingAdjustment { get; set; }
         public string SalesRep { get; set; }
+        public DateTime ShipDate { get; set; }
         public string ShippingMethod { get; set; }
         public string Total { get; set; }
         public string TotalQty { get; set; }

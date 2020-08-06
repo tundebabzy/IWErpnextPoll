@@ -2,83 +2,120 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sage.Peachtree.API.Collections.Generic;
 
 namespace IWErpnextPoll
 {
     internal class CreateSalesInvoiceHandler : AbstractDocumentHandler
     {
-        public CreateSalesInvoiceHandler(Company company, ILogger logger, EmployeeInformation employeeInformation=null) : base(company, logger, employeeInformation) { }
+        public CreateSalesInvoiceHandler(Company company, ILogger logger,
+            EmployeeInformation employeeInformation = null) : base(company, logger, employeeInformation)
+        {
+        }
 
         public override object Handle(object request)
         {
-            SalesInvoice salesInvoice = CreateNewSalesInvoice(request as SalesInvoiceDocument);
-            this.SetNext(salesInvoice != null ? new LogSalesInvoiceHandler(Company, Logger, EmployeeInformation) : null);
+            var salesInvoice = CreateNewSalesInvoice(request as SalesInvoiceDocument);
+            SetNext(salesInvoice != null ? new LogSalesInvoiceHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(request);
         }
 
         private SalesInvoice CreateNewSalesInvoice(SalesInvoiceDocument document)
         {
-            SalesInvoice salesInvoice = Company.Factories.SalesInvoiceFactory.Create();
-            if (salesInvoice != null)
+            var salesInvoice = Company.Factories.SalesInvoiceFactory.Create();
+            if (salesInvoice == null) return null;
+            salesInvoice = _createNewSalesInvoice(document, salesInvoice);
+            return salesInvoice;
+        }
+
+        private SalesInvoice _createNewSalesInvoice(SalesInvoiceDocument document, SalesInvoice salesInvoice)
+        {
+            try
             {
-                try
-                {
-                    // TODO: customer ID is a more reliable way to get Sage Customers
-                    salesInvoice.CustomerReference = CustomerReferences[document.Customer];
-                    salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
-                    salesInvoice.CustomerNote = document.NotesOrSpecialInstructions;
-                    salesInvoice.Date = document.PostingDate;
-                    salesInvoice.DateDue = document.DueDate;
-                    salesInvoice.DiscountAmount = document.DiscountAmount;
-                    salesInvoice.ReferenceNumber = document.Name;
-                    salesInvoice.ShipVia = document.ShippingMethod;
-                    salesInvoice.TermsDescription = document.PaymentTermsTemplate;
-                    salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
-                    AddSalesRep(salesInvoice, document);
-                    AddShipAddress(salesInvoice);
+                // TODO: customer ID is a more reliable way to get Sage Customers
+                salesInvoice.CustomerReference = CustomerReferences[document.Customer];
+                salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
+                salesInvoice.CustomerNote = document.NotesOrSpecialInstructions;
+                salesInvoice.Date = document.PostingDate;
+                salesInvoice.DateDue = document.DueDate;
+                salesInvoice.DiscountAmount = document.DiscountAmount;
+                salesInvoice.ReferenceNumber = document.Name;
+                salesInvoice.ShipDate = document.ShipDate;
+                salesInvoice.ShipVia = document.ShippingMethod;
+                salesInvoice.TermsDescription = document.PaymentTermsTemplate;
+                salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
+                AddSalesRep(salesInvoice, document);
+                AddShipAddress(salesInvoice);
+                AddSalesOrderData(document, salesInvoice);
 
-                    foreach (var line in document.Items)
-                    {
-                        AddLine(salesInvoice, line);
-                    }
+                salesInvoice.Save();
+                Logger.Information("Sales Invoice - {0} was saved successfully", document.Name);
+            }
+            catch (KeyNotFoundException)
+            {
+                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
+                salesInvoice = null;
+                SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
+                Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
+            }
+            catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
+            {
+                // abort. The unsaved data will eventually be re-queued
+                salesInvoice = null;
+                Logger.Debug("Record is in use. {@Name} will be sent back to the queue", document.Name);
+            }
+            catch (Sage.Peachtree.API.Exceptions.ValidationException e)
+            {
+                Logger.Debug("Validation failed.");
+                Logger.Debug(e.Message);
+                Logger.Debug("{@Name} will be sent back to the queue", document.Name);
+                salesInvoice = null;
+            }
+            catch (Exception e)
+            {
+                salesInvoice = null;
+                Logger.Debug(e, e.Message);
+                Logger.Debug("{@E}", e);
+            }
 
-                    salesInvoice.Save();
-                    Logger.Information("Sales Invoice - {0} was saved successfully", document.Name);
-                }
-                catch (KeyNotFoundException)
+            return salesInvoice;
+        }
+
+        private void AddSalesOrderData(SalesInvoiceDocument invoiceDocument, SalesInvoice salesInvoice)
+        {
+            // if the references List below has more than one item, that could potentially cause problems.
+            // In my chats with Sherri, I was assured invoices map to sales orders in a one-to-one manner.
+            // Still, I'm assuming this 'contract' can be broken in which case, i'll let error handling
+            // take over while the problem is discussed with EC
+            var references = (List<string>)GetSalesOrderReferences(invoiceDocument);
+            foreach (var reference in references)
+            {
+                LoadSalesOrderFromName(reference, out var salesOrders);
+                // Sage takes just one Sales Order in the Sales invoice. SalesOrderList should only have one item
+                AddSalesOrderData(salesInvoice, reference, salesOrders.FirstOrDefault(), invoiceDocument.Items);
+            }
+        }
+
+        private static IEnumerable<string> GetSalesOrderReferences(SalesInvoiceDocument salesInvoice)
+        {
+            var cache = new List<string>();
+            // this seems more readable than a LINQ expression. Probably faster too.
+            foreach (var item in salesInvoice.Items)
+            {
+                if (!cache.Contains(item.SalesOrder))
                 {
-                    Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
-                    salesInvoice = null;
-                    SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
-                    Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
-                }
-                catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
-                {
-                    // abort. The unsaved data will eventually be re-queued
-                    salesInvoice = null;
-                    Logger.Debug("Record is in use. {@Name} will be sent back to the queue", document.Name);
-                }
-                catch (Sage.Peachtree.API.Exceptions.ValidationException e)
-                {
-                    Logger.Debug("Validation failed.");
-                    Logger.Debug(e.Message);
-                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);
-                    salesInvoice = null;
-                }
-                catch (Exception e)
-                {
-                    salesInvoice = null;
-                    Logger.Debug(e, e.Message);
-                    Logger.Debug("{@E}", e);
+                    cache.Add(item.SalesOrder);
                 }
             }
-            return salesInvoice;
+
+            return cache;
         }
 
         private void AddShipAddress(SalesInvoice salesInvoice)
         {
-            Customer customer = Company.Factories.CustomerFactory.Load(salesInvoice.CustomerReference);
-            Contact contact = customer.ShipToContact;
+            var customer = Company.Factories.CustomerFactory.Load(salesInvoice.CustomerReference);
+            var contact = customer.ShipToContact;
             salesInvoice.ShipToAddress.Name = customer.Name;
             salesInvoice.ShipToAddress.Address.Zip = contact.Address.Zip;
             salesInvoice.ShipToAddress.Address.Address1 = contact.Address.Address1;
@@ -91,28 +128,58 @@ namespace IWErpnextPoll
         private void AddSalesRep(SalesInvoice salesInvoice, SalesInvoiceDocument document)
         {
             if (document.SalesRep == null) return;
-            EntityReference<Employee> salesRep = EmployeeInformation.Data[document.SalesRep];
+            var salesRep = EmployeeInformation.Data[document.SalesRep];
             salesInvoice.SalesRepresentativeReference = salesRep;
         }
 
-        private void AddLine(SalesInvoice salesInvoice, SalesInvoiceItem line)
+        private void AddSalesOrderData(SalesInvoice salesInvoice, string salesOrderReference, SalesOrder salesOrder,
+            List<SalesInvoiceItem> salesInvoiceItems)
         {
-            if (line.ForFreight == 1)
+            if (string.IsNullOrEmpty(salesOrderReference) || salesOrder == null) return;
+            AddSalesOrderLinesFromSalesOrder(salesInvoice, salesOrderReference, salesOrder, salesInvoiceItems);
+        }
+
+        private static void AddSalesOrderLinesFromSalesOrder(SalesInvoice salesInvoice, string salesOrderReference,
+            SalesOrder salesOrders, List<SalesInvoiceItem> salesInvoiceItems)
+        {
+            // note: ElectroComp has said they will not be having multiple sales orders linked
+            // to a single sales invoice.
+            var salesOrderLines = salesOrders?.SalesOrderLines;
+            if (salesOrderLines == null) return;
+            var candidateSalesInvoiceItems = salesInvoiceItems.Where((item) => item.SalesOrder == salesOrderReference);
+            var invoiceItems = candidateSalesInvoiceItems.ToList();
+            
+            // So here we anticipate where the invoice only covers part of the lines of the original
+            // sales order and also where the invoice has more lines than the original
+            for (var i = 0; i < invoiceItems.Count(); i++)
             {
-                salesInvoice.FreightAmount = line.Amount;
+                SetSalesInvoiceSalesOrderLineData(salesInvoice, salesOrderLines[i], invoiceItems[i]);
             }
-            else if (line.ForHandling != 1)
+        }
+
+        private static void SetSalesInvoiceSalesOrderLineData(SalesInvoice salesInvoice,
+            SalesOrderLine salesOrderLine, SalesInvoiceItem salesInvoiceItem)
+        {
+            var _ = salesInvoice.AddSalesOrderLine(salesOrderLine);
+            _.Quantity = salesInvoiceItem.Qty;
+            _.Amount = salesInvoiceItem.Amount;
+            _.CalculateUnitCost(_.Quantity, _.Amount);
+            _.Description = salesInvoiceItem.Description;
+            if (salesInvoiceItem.ForFreight == 1)
             {
-                SalesInvoiceSalesLine _ = salesInvoice.AddSalesLine();
-                EntityReference itemReference = ItemReferences[line.ItemCode];
-                ServiceItem item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
-                _.AccountReference = item.SalesAccountReference;
-                _.Quantity = line.Qty;
-                _.UnitPrice = line.Rate;
-                _.Amount = line.Amount;
-                _.Description = line.Description;
-                _.InventoryItemReference = itemReference;
+                salesInvoice.FreightAmount = salesInvoiceItem.Amount;
             }
+        }
+
+        private void LoadSalesOrderFromName(string salesOrderReference, out SalesOrderList salesOrderLines)
+        {
+            salesOrderLines = Company.Factories.SalesOrderFactory.List();
+            var filter = LoadModifiers.Create();
+            var property = FilterExpression.Property("SalesOrder.ReferenceNumber");
+            var value = FilterExpression.StringConstant(salesOrderReference);
+            var filterParams = FilterExpression.Contains(property, value);
+            filter.Filters = filterParams;
+            salesOrderLines.Load(filter);
         }
     }
 }
