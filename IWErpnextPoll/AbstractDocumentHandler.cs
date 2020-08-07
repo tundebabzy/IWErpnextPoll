@@ -42,7 +42,6 @@ namespace IWErpnextPoll
                 try
                 {
                     dictionary.Add(vendor.Name, vendor.Key);
-                    Logger.Debug("Added vendor reference. Key -> {0}, Value -> {1}", vendor.Name, vendor.Key);
                     ;
                 }
                 catch (ArgumentException e)
@@ -66,7 +65,6 @@ namespace IWErpnextPoll
                 try
                 {
                     keyValuePairs.Add(item.ID, item.Key);
-                    Logger.Debug("Inventory reference was added. Key -> {0}, Value -> {1}", item.ID, item.Key);
                     ;
                 }
                 catch (ArgumentException e)
@@ -89,7 +87,6 @@ namespace IWErpnextPoll
                 try
                 {
                     keyValuePairs.Add(customer.Name, customer.Key);
-                    Logger.Debug("Added customer reference. Key -> {0}, value -> {1}", customer.ID, customer.Key);
                 }
                 catch (ArgumentException e)
                 {

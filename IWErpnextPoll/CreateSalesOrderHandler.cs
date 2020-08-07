@@ -2,6 +2,8 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sage.Peachtree.API.Validations;
 
 namespace IWErpnextPoll
 {
@@ -66,11 +68,17 @@ namespace IWErpnextPoll
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
-                    // abort. This could be a sales order that has already been saved.
                     Logger.Debug("Validation failed.");
                     Logger.Debug(e.Message);
-                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);
-                    salesOrder = null;
+                    if (e.ProblemList.OfType<DuplicateValueProblem>().Any() && e.Message.Contains("duplicate reference number"))
+                    {
+                        Logger.Debug("{@Name}is already in Sage so will notify ERPNext", document.Name);
+                    }
+                    else
+                    {
+                        Logger.Debug("{@Name} will be sent back to the queue", document.Name);
+                        salesOrder = null;   
+                    }
                 }
                 catch (Exception e)
                 {

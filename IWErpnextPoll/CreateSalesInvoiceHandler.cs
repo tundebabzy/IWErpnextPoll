@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sage.Peachtree.API.Collections.Generic;
+using Sage.Peachtree.API.Validations;
 
 namespace IWErpnextPoll
 {
@@ -69,7 +70,14 @@ namespace IWErpnextPoll
             {
                 Logger.Debug("Validation failed.");
                 Logger.Debug(e.Message);
-                Logger.Debug("{@Name} will be sent back to the queue", document.Name);
+                if (e.ProblemList.OfType<DuplicateValueProblem>().Any() && e.Message.Contains("duplicate reference number"))
+                {
+                    Logger.Debug("{@Name}is already in Sage so will notify ERPNext", document.Name);
+                }
+                else
+                {
+                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);   
+                }
                 salesInvoice = null;
             }
             catch (Exception e)
@@ -160,14 +168,17 @@ namespace IWErpnextPoll
         private static void SetSalesInvoiceSalesOrderLineData(SalesInvoice salesInvoice,
             SalesOrderLine salesOrderLine, SalesInvoiceItem salesInvoiceItem)
         {
-            var _ = salesInvoice.AddSalesOrderLine(salesOrderLine);
-            _.Quantity = salesInvoiceItem.Qty;
-            _.Amount = salesInvoiceItem.Amount;
-            _.CalculateUnitCost(_.Quantity, _.Amount);
-            _.Description = salesInvoiceItem.Description;
             if (salesInvoiceItem.ForFreight == 1)
             {
                 salesInvoice.FreightAmount = salesInvoiceItem.Amount;
+            }
+            else
+            {
+                var _ = salesInvoice.AddSalesOrderLine(salesOrderLine);
+                _.Quantity = salesInvoiceItem.Qty;
+                _.Amount = salesInvoiceItem.Amount;
+                _.CalculateUnitCost(_.Quantity, _.Amount);
+                _.Description = salesInvoiceItem.Description;
             }
         }
 

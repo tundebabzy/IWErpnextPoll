@@ -185,7 +185,7 @@ namespace IWErpnextPoll
         {
             if (queue.IsEmpty || Company == null || Company.IsClosed) return;
             var handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
-            while (queue.TryDequeue(out object document) && Session.SessionActive)
+            while (queue.TryDequeue(out var document) && Session.SessionActive)
             {
                 handler.Handle(document);
             }
