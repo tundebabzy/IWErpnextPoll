@@ -72,7 +72,7 @@ namespace IWErpnextPoll
                 Logger.Debug(e.Message);
                 if (e.ProblemList.OfType<DuplicateValueProblem>().Any() && e.Message.Contains("duplicate reference number"))
                 {
-                    Logger.Debug("{@Name}is already in Sage so will notify ERPNext", document.Name);
+                    Logger.Debug("{@Name} is already in Sage so will notify ERPNext", document.Name);
                 }
                 else
                 {

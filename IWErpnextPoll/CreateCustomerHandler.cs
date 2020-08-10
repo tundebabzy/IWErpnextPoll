@@ -2,6 +2,7 @@
 using Sage.Peachtree.API;
 using Serilog;
 using System;
+using Sage.Peachtree.API.Exceptions;
 
 namespace IWErpnextPoll
 {
@@ -21,7 +22,7 @@ namespace IWErpnextPoll
 
         private CustomerDocument GetCustomerDetails(string customerName)
         {
-            var receiver = new CustomerCommand(customerName, $"{GetResourceServerAddress()}?cn={CustomerName}");
+            var receiver = new CustomerCommand(customerName, $"{GetResourceServerAddress()}?cn={customerName}");
             var document = receiver.Execute();
 
             return document.Data.Message;
