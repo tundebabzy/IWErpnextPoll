@@ -25,7 +25,7 @@ namespace IWErpnextPoll
 
         private SalesOrder CreateNewSalesOrder(SalesOrderDocument document)
         {
-            var customerDocument = GetCustomerFromErpNext(document.OldCustomerId);
+            var customerDocument = GetCustomerFromErpNext(document.CustomerName);
             var salesOrder = Company.Factories.SalesOrderFactory.Create();
             var customerEntityReference = GetCustomerEntityReference(customerDocument?.OldCustomerId);
             if (customerEntityReference == null)

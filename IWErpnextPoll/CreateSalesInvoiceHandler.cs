@@ -24,7 +24,7 @@ namespace IWErpnextPoll
 
         private SalesInvoice CreateNewSalesInvoice(SalesInvoiceDocument document)
         {
-            var customerDocument = GetCustomerFromErpNext(document.OldCustomerId);
+            var customerDocument = GetCustomerFromErpNext(document.CustomerName);
             var salesInvoice = Company.Factories.SalesInvoiceFactory.Create();
             var customerEntityReference = GetCustomerEntityReference(customerDocument?.OldCustomerId);
             if (customerEntityReference == null)
