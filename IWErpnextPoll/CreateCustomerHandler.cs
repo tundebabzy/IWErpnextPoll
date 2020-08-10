@@ -52,14 +52,14 @@ namespace IWErpnextPoll
                 customer.Save();
                 Logger.Information("Customer - {Customer} saved successfully", customerDocument.CustomerName);
             }
-            catch (Sage.Peachtree.API.Exceptions.ValidationException e)
+            catch (ValidationException e)
             {
                 Logger.Debug("Validation failed.");
                 Logger.Debug(e.Message);
                 Logger.Debug("{@Name} will be sent back to the queue", customerDocument.Name);
                 customer = null;
             }
-            catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
+            catch (RecordInUseException)
             {
                 customer = null;
                 Logger.Debug("Record is in use. {@Name} will be sent back to the queue", customerDocument.Name);

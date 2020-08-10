@@ -24,18 +24,26 @@ namespace IWErpnextPoll
 
         private SalesInvoice CreateNewSalesInvoice(SalesInvoiceDocument document)
         {
+            var customerDocument = GetCustomerFromErpNext(document.OldCustomerId);
             var salesInvoice = Company.Factories.SalesInvoiceFactory.Create();
-            if (salesInvoice == null) return null;
-            salesInvoice = _createNewSalesInvoice(document, salesInvoice);
+            var customerEntityReference = GetCustomerEntityReference(customerDocument?.OldCustomerId);
+            if (customerEntityReference == null)
+            {
+                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
+                salesInvoice = null;
+                SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
+                Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
+            }
+            else if (salesInvoice == null) return null;
+            salesInvoice = _createNewSalesInvoice(document, salesInvoice, customerEntityReference);
             return salesInvoice;
         }
 
-        private SalesInvoice _createNewSalesInvoice(SalesInvoiceDocument document, SalesInvoice salesInvoice)
+        private SalesInvoice _createNewSalesInvoice(SalesInvoiceDocument document, SalesInvoice salesInvoice, EntityReference<Customer> customerEntityReference)
         {
             try
             {
-                // TODO: customer ID is a more reliable way to get Sage Customers
-                salesInvoice.CustomerReference = CustomerReferences[document.Customer];
+                salesInvoice.CustomerReference = customerEntityReference;
                 salesInvoice.CustomerPurchaseOrderNumber = document.PoNo;
                 salesInvoice.CustomerNote = document.NotesOrSpecialInstructions;
                 salesInvoice.Date = document.PostingDate;
@@ -52,13 +60,6 @@ namespace IWErpnextPoll
 
                 salesInvoice.Save();
                 Logger.Information("Sales Invoice - {0} was saved successfully", document.Name);
-            }
-            catch (KeyNotFoundException)
-            {
-                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
-                salesInvoice = null;
-                SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
-                Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
             }
             catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
             {

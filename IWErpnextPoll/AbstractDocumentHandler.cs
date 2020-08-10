@@ -2,6 +2,8 @@
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sage.Peachtree.API.Collections.Generic;
 
 namespace IWErpnextPoll
 {
@@ -10,8 +12,6 @@ namespace IWErpnextPoll
         private IDocumentHandler _nextHandler;
 
         protected Company Company { get; set; }
-
-        protected Dictionary<string, EntityReference<Customer>> CustomerReferences { get; set; }
 
         protected Dictionary<string, EntityReference> ItemReferences { get; set; }
 
@@ -27,7 +27,6 @@ namespace IWErpnextPoll
             Company = c;
             Logger = logger;
             EmployeeInformation = employeeInformation;
-            CustomerReferences = CustomerToReferenceDictionary();
             VendorReferences = VendorToReferenceDictionary();
             ItemReferences = InventoryItemToReferenceDictionary();
         }
@@ -42,7 +41,6 @@ namespace IWErpnextPoll
                 try
                 {
                     dictionary.Add(vendor.Name, vendor.Key);
-                    ;
                 }
                 catch (ArgumentException e)
                 {
@@ -65,7 +63,6 @@ namespace IWErpnextPoll
                 try
                 {
                     keyValuePairs.Add(item.ID, item.Key);
-                    ;
                 }
                 catch (ArgumentException e)
                 {
@@ -77,26 +74,38 @@ namespace IWErpnextPoll
             return keyValuePairs;
         }
 
-        private Dictionary<string, EntityReference<Customer>> CustomerToReferenceDictionary()
+        protected static CustomerDocument GetCustomerFromErpNext(string name)
         {
-            var keyValuePairs = new Dictionary<string, EntityReference<Customer>>();
-            var customers = Company.Factories.CustomerFactory.List();
-            customers.Load();
-            foreach (var customer in customers)
+            var receiver = new CustomerCommand(name, $"{GetResourceServerAddress()}?cn={name}");
+            var customerDocument = receiver.Execute();
+            return customerDocument.Data.Message;
+        }
+
+        private static string GetResourceServerAddress()
+        {
+            return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
+        }
+
+        protected EntityReference<Customer> GetCustomerEntityReference(string documentOldCustomerId)
+        {
+            try
             {
-                try
-                {
-                    keyValuePairs.Add(customer.Name, customer.Key);
-                }
-                catch (ArgumentException e)
-                {
-                    // already in queue so pass
-                    Logger.Debug(e.Message);
-                    Logger.Debug("Key was -> {0}, value was {1}", customer.ID, customer.Key);
-                    Logger.Debug("Moving on.");
-                }
+                var customerList = Company.Factories.CustomerFactory.List();
+                var filter = LoadModifiers.Create();
+                var property = FilterExpression.Property("Customer.ID");
+                var value = FilterExpression.StringConstant(documentOldCustomerId);
+                var filterParams = FilterExpression.Contains(property, value);
+                filter.Filters = filterParams;
+                customerList.Load(filter);
+
+                var entity = customerList.FirstOrDefault((customer => customer.ID == documentOldCustomerId));
+                return entity?.Key;
             }
-            return keyValuePairs;
+            catch (Exception e)
+            {
+                Logger.Debug($"Could not get customer entity reference. @{e.Message}");
+                return null;
+            }
         }
 
         public IDocumentHandler SetNext(IDocumentHandler handler)

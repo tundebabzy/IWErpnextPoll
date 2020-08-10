@@ -25,10 +25,9 @@ namespace IWErpnextPoll
 
         private SalesOrder CreateNewSalesOrder(SalesOrderDocument document)
         {
-            var receiver = new CustomerCommand(document.CustomerName, $"{GetResourceServerAddress()}?cn={document.CustomerName}");
-            var customerDocument = receiver.Execute();
+            var customerDocument = GetCustomerFromErpNext(document.OldCustomerId);
             var salesOrder = Company.Factories.SalesOrderFactory.Create();
-            var customerEntityReference = GetCustomerEntityReference(customerDocument.Data.Message?.OldCustomerId);
+            var customerEntityReference = GetCustomerEntityReference(customerDocument?.OldCustomerId);
             if (customerEntityReference == null)
             {
                 Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
@@ -40,8 +39,6 @@ namespace IWErpnextPoll
             {
                 try
                 {
-                    // TODO: customer ID is a more reliable way to get Sage Customers
-                    // salesOrder.CustomerReference = CustomerReferences[document.Customer];
                     salesOrder.CustomerReference = customerEntityReference;
                     salesOrder.CustomerPurchaseOrderNumber = document.PoNo;
                     salesOrder.CustomerNote = document.NotesOrSpecialInstructions;
@@ -63,14 +60,6 @@ namespace IWErpnextPoll
 
                     salesOrder.Save();
                     Logger.Information("Sales Order - {0} was saved successfully", document.Name);
-                }
-                catch (KeyNotFoundException)
-                {
-                    // push to a handler to create this missing customer
-                    // Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
-                    // salesOrder = null;
-                    // SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
-                    // Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {
@@ -100,33 +89,6 @@ namespace IWErpnextPoll
                 }
             }
             return salesOrder;
-        }
-
-        public string GetResourceServerAddress()
-        {
-            return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
-        }
-
-        private EntityReference<Customer> GetCustomerEntityReference(string documentOldCustomerId)
-        {
-            try
-            {
-                var customerList = Company.Factories.CustomerFactory.List();
-                var filter = LoadModifiers.Create();
-                var property = FilterExpression.Property("Customer.ID");
-                var value = FilterExpression.StringConstant(documentOldCustomerId);
-                var filterParams = FilterExpression.Contains(property, value);
-                filter.Filters = filterParams;
-                customerList.Load(filter);
-
-                var entity = customerList.FirstOrDefault((customer => customer.ID == documentOldCustomerId));
-                return entity?.Key;
-            }
-            catch (Exception e)
-            {
-                Logger.Debug($"Could not get customer entity reference. @{e.Message}");
-                return null;
-            }
         }
 
         private void AddShipAddress(SalesOrder salesOrder)
