@@ -128,7 +128,8 @@ namespace IWErpnextPoll
             else if (line.ForHandling != 1)
             {
                 var _ = salesOrder.AddLine();
-                var itemReference = ItemReferences[line.ItemCode];
+                // var itemReference = ItemReferences[line.ItemCode];
+                var itemReference = GetItemEntityReference(line.ItemCode);
                 var item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
                 _.AccountReference = item.SalesAccountReference;
                 _.Quantity = line.Qty;

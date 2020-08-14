@@ -1,26 +1,21 @@
 ﻿using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IWErpnextPoll
 {
     class CustomerCommand
     {
         private readonly Resource _receiver;
-        protected string CustomerName { get; set; }
+        private string CustomerName { get; set; }
 
-        public CustomerCommand(string customerName, string serverURL = "https://portal.electrocomptr.com")
+        public CustomerCommand(string customerName, string serverUrl = "https://portal.electrocomptr.com")
         {
-            _receiver = new Resource(serverURL);
+            _receiver = new Resource(serverUrl);
             CustomerName = customerName;
         }
 
         public IRestResponse<CustomerResponse> Execute()
         {
-            IRestResponse<CustomerResponse> documents = _receiver.GetCustomerDetails();
+            var documents = _receiver.GetCustomerDetails();
             return documents;
         }
     }

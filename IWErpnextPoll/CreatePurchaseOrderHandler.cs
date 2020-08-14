@@ -72,7 +72,8 @@ namespace IWErpnextPoll
         private void AddLine(PurchaseOrder purchaseOrderDocument, PurchaseOrderItem line)
         {
             var _ = purchaseOrderDocument.AddLine();
-            var itemReference = ItemReferences[line.ItemCode];
+            // var itemReference = ItemReferences[line.ItemCode];
+            var itemReference = GetItemEntityReference(line.ItemCode);
             var stockItem = Company.Factories.StockItemFactory.Load(itemReference as EntityReference<StockItem>);
             _.AccountReference = stockItem.COGSAccountReference;
             _.Quantity = line.Qty;
