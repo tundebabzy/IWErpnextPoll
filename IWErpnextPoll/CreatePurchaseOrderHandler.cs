@@ -20,15 +20,25 @@ namespace IWErpnextPoll
 
         private PurchaseOrder CreateNewPurchaseOrder(PurchaseOrderDocument purchaseOrderDocument)
         {
+            var supplierDocument = GetSupplierFromErpNext(purchaseOrderDocument.Supplier);
+            var supplierEntityReference = GetVendorEntityReference(supplierDocument?.VendorId);
             var purchaseOrder = Company.Factories.PurchaseOrderFactory.Create();
-            if (purchaseOrder != null)
+            if (supplierEntityReference == null)
+            {
+                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
+                purchaseOrder = null;
+                SetNext(new CreateSupplierHandler(Company, Logger, EmployeeInformation));
+                Logger.Debug("Customer {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
+            }
+            else if (purchaseOrder != null)
             {
                 try
                 {
                     purchaseOrder.Date = purchaseOrderDocument.TransactionDate;
                     purchaseOrder.GoodThroughDate = purchaseOrderDocument.ScheduleDate;
                     purchaseOrder.ReferenceNumber = purchaseOrderDocument.Name;
-                    purchaseOrder.VendorReference = VendorReferences[purchaseOrderDocument.Supplier];
+                    // purchaseOrder.VendorReference = VendorReferences[purchaseOrderDocument.Supplier];
+                    purchaseOrder.VendorReference = supplierEntityReference;
                     purchaseOrder.TermsDescription = purchaseOrderDocument.PaymentTermsTemplate;
                     purchaseOrder.ShipVia = purchaseOrderDocument.ShipMethod;
 

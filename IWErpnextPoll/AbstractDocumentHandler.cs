@@ -27,8 +27,14 @@ namespace IWErpnextPoll
             Company = c;
             Logger = logger;
             EmployeeInformation = employeeInformation;
-            VendorReferences = VendorToReferenceDictionary();
-            ItemReferences = InventoryItemToReferenceDictionary();
+            // VendorReferences = VendorToReferenceDictionary();
+            // ItemReferences = InventoryItemToReferenceDictionary();
+        }
+
+        protected AbstractDocumentHandler(Company c, ILogger logger)
+        {
+            Company = c;
+            Logger = logger;
         }
 
         private Dictionary<string, EntityReference<Vendor>> VendorToReferenceDictionary()
@@ -53,35 +59,21 @@ namespace IWErpnextPoll
             return dictionary;
         }
 
-        private Dictionary<string, EntityReference> InventoryItemToReferenceDictionary()
-        {
-            var keyValuePairs = new Dictionary<string, EntityReference>();
-            var inventoryItems = Company.Factories.InventoryItemFactory.List();
-            inventoryItems.Load();
-            foreach (var item in inventoryItems)
-            {
-                try
-                {
-                    keyValuePairs.Add(item.ID, item.Key);
-                }
-                catch (ArgumentException e)
-                {
-                    Logger.Debug(e.Message);
-                    Logger.Debug("Key was -> {0}, value was {1}", item.ID, item.Key);
-                    Logger.Debug("Moving on.");
-                }
-            }
-            return keyValuePairs;
-        }
-
         protected static CustomerDocument GetCustomerFromErpNext(string name)
         {
-            var receiver = new CustomerCommand(name, $"{GetResourceServerAddress()}?cn={name}");
+            var receiver = new CustomerCommand(name, $"{GetCustomerResourceServerAddress()}");
             var customerDocument = receiver.Execute();
             return customerDocument.Data.Message;
         }
 
-        private static string GetResourceServerAddress()
+        protected static SupplierDocument GetSupplierFromErpNext(string name)
+        {
+            var receiver = new SupplierCommand(name, $"{GetCustomerResourceServerAddress()}");
+            var supplierDocument = receiver.Execute();
+            return supplierDocument.Data.Message;
+        }
+
+        private static string GetCustomerResourceServerAddress()
         {
             return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
         }
@@ -117,6 +109,24 @@ namespace IWErpnextPoll
             catch (Exception e)
             {
                 Logger.Debug($"Could not get customer entity reference. @{e.Message}");
+                return null;
+            }
+        }
+
+        protected EntityReference<Vendor> GetVendorEntityReference(string vendorId)
+        {
+            try
+            {
+                var vendorList = Company.Factories.VendorFactory.List();
+                var filter = GetPropertyContainsLoadModifiers("Vendor.ID", vendorId);
+                vendorList.Load(filter);
+
+                var entity = vendorList.FirstOrDefault((vendor => vendor.ID == vendorId));
+                return entity?.Key;
+            }
+            catch (Exception e)
+            {
+                Logger.Debug($"Could not get vendor entity reference. @{e.Message}");
                 return null;
             }
         }

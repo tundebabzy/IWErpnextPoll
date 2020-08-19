@@ -11,9 +11,11 @@ namespace IWErpnextPoll
         private const string ApiToken = "4e7b90c8fc265ac";
         public string BaseUrl { get; set; }
         public string Doctype { get; set; }
-        public Resource(string baseUrl)
+        public string Param { get; set; }
+        public Resource(string baseUrl, string customerName = "")
         {
-            this.BaseUrl = baseUrl;
+            BaseUrl = baseUrl;
+            Param = customerName;
             _restClient = new RestClient(baseUrl);
             _restClient.UseSerializer(() => new JsonSerializer {DateFormat = "yyyy-MM-dd"});
             _restClient.AddDefaultHeader("Authorization", $"token {ApiToken}:{ApiSecret}");
@@ -22,6 +24,10 @@ namespace IWErpnextPoll
         public IRestResponse<CustomerResponse> GetCustomerDetails()
         {
             var request = new RestRequest(Method.GET);
+            if (!String.IsNullOrEmpty(Param))
+            {
+                request.AddQueryParameter("cn", Param);
+            }
             var response = _restClient.Execute<CustomerResponse>(request);
             return response;
         }

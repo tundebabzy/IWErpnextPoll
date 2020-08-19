@@ -22,7 +22,7 @@ namespace IWErpnextPoll
 
         private CustomerDocument GetCustomerDetails(string customerName)
         {
-            var receiver = new CustomerCommand(customerName, $"{GetResourceServerAddress()}?cn={customerName}");
+            var receiver = new CustomerCommand(customerName, $"{GetResourceServerAddress()}");
             var document = receiver.Execute();
 
             return document.Data.Message;
@@ -100,19 +100,21 @@ namespace IWErpnextPoll
             AddressDocument shippingAddress = customerDocument.Addresses.Find(x => x.AddressType == "Shipping");
             if (billingAddress != null)
             {
+                var state = String.IsNullOrEmpty(billingAddress.State) ? "" : char.ToUpper(billingAddress.State[0]) + billingAddress.State.Substring(1).ToLower();
                 customer.BillToContact.Address.Address1 = billingAddress.AddressLine1;
                 customer.BillToContact.Address.Address2 = billingAddress.AddressLine2;
                 customer.BillToContact.Address.City = billingAddress.City;
-                customer.BillToContact.Address.State = billingAddress.State;
+                customer.BillToContact.Address.State = String.IsNullOrEmpty(state) ? "" : Constants.States[state];
                 customer.BillToContact.Address.Zip = billingAddress.Pincode;
                 customer.BillToContact.Address.Country = billingAddress.Country;
             }
             if (shippingAddress != null)
             {
+                var state = String.IsNullOrEmpty(shippingAddress.State) ? "" : char.ToUpper(shippingAddress.State[0]) + shippingAddress.State.Substring(1).ToLower();
                 customer.ShipToContact.Address.Address1 = shippingAddress.AddressLine1;
                 customer.BillToContact.Address.Address2 = shippingAddress.AddressLine2;
                 customer.BillToContact.Address.City = shippingAddress.City;
-                customer.BillToContact.Address.State = shippingAddress.State;
+                customer.BillToContact.Address.State = String.IsNullOrEmpty(state) ? "" : Constants.States[state];
                 customer.BillToContact.Address.Zip = shippingAddress.Pincode;
                 customer.BillToContact.Address.Country = shippingAddress.Country;
             }

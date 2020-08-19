@@ -46,7 +46,11 @@ namespace IWErpnextPoll
                     salesOrder.DiscountAmount = document.DiscountAmount;
                     salesOrder.DiscountDate = document.TransactionDate;
                     salesOrder.ReferenceNumber = document.Name;
-                    salesOrder.ShipByDate = document.DeliveryDate;
+                    salesOrder.ShipByDate = document.DeliveryDate < document.TransactionDate ? document.TransactionDate : document.DeliveryDate;
+                    if(document.DeliveryDate <= document.TransactionDate)
+                    {
+                        Logger.Information("{@Name} has delivery date has been set to transaction date because delivery date is earlier than transaction date", document.Name);
+                    }
                     salesOrder.ShipVia = document.ShippingMethod;
                     salesOrder.TermsDescription = document.PaymentTermsTemplate;
                     salesOrder.CustomerPurchaseOrderNumber = document.PoNo;
@@ -58,8 +62,11 @@ namespace IWErpnextPoll
                         AddLine(salesOrder, line);
                     }
 
-                    salesOrder.Save();
-                    Logger.Information("Sales Order - {0} was saved successfully", document.Name);
+                    if (salesOrder != null)
+                    {
+                        salesOrder.Save();
+                        Logger.Information("Sales Order - {0} was saved successfully", document.Name);
+                    }
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {
@@ -67,11 +74,17 @@ namespace IWErpnextPoll
                     salesOrder = null;
                     Logger.Debug("Record is in use. {@Name} will be sent back to the queue", document.Name);
                 }
+                catch (ArgumentException e)
+                {
+                    salesOrder = null;
+                    Logger.Debug("There was a problem with creating {@Name}. It will be sent back to the queue", document.Name);
+                    Logger.Debug("There error is {@E}", e.Message);
+                }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)
                 {
                     Logger.Debug("Validation failed.");
                     Logger.Debug(e.Message);
-                    if (e.ProblemList.OfType<DuplicateValueProblem>().Any() && e.Message.Contains("duplicate reference number"))
+                    if (e.ProblemList.OfType<DuplicateValueProblem>().Any(item => item.PropertyName == "ReferenceNumber"))
                     {
                         Logger.Debug("{@Name} is already in Sage so will notify ERPNext", document.Name);
                     }
@@ -130,12 +143,18 @@ namespace IWErpnextPoll
                 var _ = salesOrder.AddLine();
                 // var itemReference = ItemReferences[line.ItemCode];
                 var itemReference = GetItemEntityReference(line.ItemCode);
+                if (itemReference == null)
+                {
+                    Logger.Debug("Item {@name} was not found in Sage.", line.ItemCode);
+                    Logger.Debug("Item {@name} needs to be created in Sage", line.ItemCode);
+                    return;
+                }
                 var item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
                 _.AccountReference = item.SalesAccountReference;
                 _.Quantity = line.Qty;
-                _.UnitPrice = line.Rate;
-                _.Amount = line.Amount;
                 _.Description = line.Description;
+                _.UnitPrice = Decimal.Divide(line.Amount, line.Qty);    // _.CalculateUnitCost(_.Quantity, _.Amount);
+                _.Amount = _.CalculateAmount(_.Quantity, _.UnitPrice);
                 _.InventoryItemReference = itemReference;
             }
         }

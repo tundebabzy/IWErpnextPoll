@@ -67,19 +67,25 @@ namespace IWErpnextPoll
                 salesInvoice = null;
                 Logger.Debug("Record is in use. {@Name} will be sent back to the queue", document.Name);
             }
+            catch (ArgumentException e)
+            {
+                salesInvoice = null;
+                Logger.Debug("There was a problem with creating {@Name}. It will be sent back to the queue", document.Name);
+                Logger.Debug("There error is {@E}", e.Message);
+            }
             catch (Sage.Peachtree.API.Exceptions.ValidationException e)
             {
                 Logger.Debug("Validation failed.");
                 Logger.Debug(e.Message);
-                if (e.ProblemList.OfType<DuplicateValueProblem>().Any() && e.Message.Contains("duplicate reference number"))
+                if (e.ProblemList.OfType<DuplicateValueProblem>().Any(item => item.PropertyName == "ReferenceNumber"))
                 {
                     Logger.Debug("{@Name} is already in Sage so will notify ERPNext", document.Name);
                 }
                 else
                 {
-                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);   
+                    Logger.Debug("{@Name} will be sent back to the queue", document.Name);
+                    salesInvoice = null;
                 }
-                salesInvoice = null;
             }
             catch (Exception e)
             {
@@ -178,7 +184,7 @@ namespace IWErpnextPoll
                 var _ = salesInvoice.AddSalesOrderLine(salesOrderLine);
                 _.Quantity = salesInvoiceItem.Qty;
                 _.Amount = salesInvoiceItem.Amount;
-                _.CalculateUnitCost(_.Quantity, _.Amount);
+                _.UnitPrice = Decimal.Divide(salesInvoiceItem.Amount, salesInvoiceItem.Qty); // _.CalculateUnitCost(_.Quantity, _.Amount);
                 _.Description = salesInvoiceItem.Description;
             }
         }
