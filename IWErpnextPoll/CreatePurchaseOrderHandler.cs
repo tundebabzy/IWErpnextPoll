@@ -10,6 +10,7 @@ namespace IWErpnextPoll
         public CreatePurchaseOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
         public override object Handle(object request)
         {
+            Logger.Information("Version {@Version}", Constants.Version);
             var purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
             if (GetNext() == null)
             {

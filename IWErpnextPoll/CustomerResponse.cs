@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace IWErpnextPoll
+﻿namespace IWErpnextPoll
 {
     public class CustomerResponse
     {

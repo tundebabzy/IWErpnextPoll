@@ -1,5 +1,4 @@
-﻿using RestSharp;
-using Sage.Peachtree.API;
+﻿using Sage.Peachtree.API;
 using Serilog;
 using System;
 using Sage.Peachtree.API.Exceptions;
@@ -13,6 +12,7 @@ namespace IWErpnextPoll
 
         public override object Handle(object request)
         {
+            Logger.Information("Version {@Version}", Constants.Version);
             var customerName = (request as SalesOrderDocument)?.Customer;
             var customerDocument = customerName != null ? GetCustomerDetails(customerName) : null;
             var customer = customerDocument != null ? CreateNewCustomer(customerDocument) : null;

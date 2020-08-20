@@ -1,20 +1,19 @@
 ﻿using Sage.Peachtree.API;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Sage.Peachtree.API.Collections.Generic;
 using Sage.Peachtree.API.Validations;
 
 namespace IWErpnextPoll
 {
-    class CreateSalesOrderHandler : AbstractDocumentHandler
+    internal class CreateSalesOrderHandler : AbstractDocumentHandler
     {
         public CreateSalesOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
 
 
         public override object Handle(object request)
         {
+            Logger.Information("Version {@Version}", Constants.Version);
             var salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
             if (GetNext() == null)
             {
@@ -62,11 +61,8 @@ namespace IWErpnextPoll
                         AddLine(salesOrder, line);
                     }
 
-                    if (salesOrder != null)
-                    {
-                        salesOrder.Save();
-                        Logger.Information("Sales Order - {0} was saved successfully", document.Name);
-                    }
+                    salesOrder.Save();
+                    Logger.Information("Sales Order - {0} was saved successfully", document.Name);
                 }
                 catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
                 {

@@ -6,9 +6,9 @@ namespace IWErpnextPoll
     {
         private readonly Resource _receiver;
 
-        public SalesOrderCommand(string serverURL = "https://portal.electrocomptr.com")
+        public SalesOrderCommand(string serverUrl = "https://portal.electrocomptr.com")
         {
-            _receiver = new Resource(serverURL);
+            _receiver = new Resource(serverUrl);
         }
 
         public IRestResponse<SalesOrderResponse> Execute()

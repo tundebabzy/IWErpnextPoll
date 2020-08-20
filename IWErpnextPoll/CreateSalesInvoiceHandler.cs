@@ -17,6 +17,7 @@ namespace IWErpnextPoll
 
         public override object Handle(object request)
         {
+            Logger.Information("Version {@Version}", Constants.Version);
             var salesInvoice = CreateNewSalesInvoice(request as SalesInvoiceDocument);
             SetNext(salesInvoice != null ? new LogSalesInvoiceHandler(Company, Logger, EmployeeInformation) : null);
             return base.Handle(request);

@@ -1,8 +1,6 @@
-﻿using RestSharp;
-using Sage.Peachtree.API;
+﻿using Sage.Peachtree.API;
 using Serilog;
 using System;
-using System.Collections.Generic;
 
 namespace IWErpnextPoll
 {
@@ -12,6 +10,7 @@ namespace IWErpnextPoll
 
         public override object Handle(object request)
         {
+            Logger.Information("Version {@Version}", Constants.Version);
             var supplierName = (request as PurchaseOrderDocument)?.Supplier;
             var supplierDocument = GetSupplierDetails(supplierName);
             var supplier = CreateNewSupplier(supplierDocument);
