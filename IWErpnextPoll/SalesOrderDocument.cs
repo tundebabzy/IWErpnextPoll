@@ -5,7 +5,6 @@ namespace IWErpnextPoll
 {
     public class SalesOrderDocument
     {
-        public SalesOrderDocument() { }
         public string AmendedFrom { get; set; }
         public string Company { get; set; }
         public string Currency { get; set; }

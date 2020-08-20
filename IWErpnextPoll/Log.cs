@@ -1,6 +1,7 @@
-﻿namespace IWErpnextPoll
+﻿// ReSharper disable InconsistentNaming
+namespace IWErpnextPoll
 {
-    sealed class Log
+    internal sealed class Log
     {
         /** Going against naming convention to avoid having to create a custom serializer */
         public string document_date;

@@ -1,9 +1,7 @@
-﻿using RestSharp;
-using Sage.Peachtree.API;
+﻿using Sage.Peachtree.API;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Timers;
@@ -12,13 +10,13 @@ namespace IWErpnextPoll
 {
     public partial class ErpnextService : ServiceBase
     {
-        private const string COMPANY_NAME = "Electro-Comp Tape & Reel Services, LLC";
-        private const string APPLICATION_ID = "41Dzi73wlWhIwx8yTdVQ6dJRbGU9nJtcu47x2rY4MOS7u9tAALysow==VK7xyIAjtHr7JDWfDXJYhVLelt+UlNwmGpSMCjISTVFfEo6e0pRzQR7cnDraS9HTpJnP34yIDrgC4nA7QU1rMCPWNQ4eOs+7+dm5AV/mymbQWUEx+tNEQhDka3PJi6nFXkZEaDa+I6bhbQnAAg+65ZD6/+IJ02CjaAGCAzaRiQebwojCJiKuSKoiDk/xkDTuD975uiTLcGZ3ZrzByxfoPdaUkAPQRTaEFmiARO/eBtNg7nSXUvVaEF0NddSjTyf6jbwycx6NnzmRWk/qBJPW0g==";
+        private const string CompanyName = "Electro-Comp Tape & Reel Services, LLC";
+        private const string ApplicationId = "41Dzi73wlWhIwx8yTdVQ6dJRbGU9nJtcu47x2rY4MOS7u9tAALysow==VK7xyIAjtHr7JDWfDXJYhVLelt+UlNwmGpSMCjISTVFfEo6e0pRzQR7cnDraS9HTpJnP34yIDrgC4nA7QU1rMCPWNQ4eOs+7+dm5AV/mymbQWUEx+tNEQhDka3PJi6nFXkZEaDa+I6bhbQnAAg+65ZD6/+IJ02CjaAGCAzaRiQebwojCJiKuSKoiDk/xkDTuD975uiTLcGZ3ZrzByxfoPdaUkAPQRTaEFmiARO/eBtNg7nSXUvVaEF0NddSjTyf6jbwycx6NnzmRWk/qBJPW0g==";
         private bool _canRequest = true;
         private ILogger Logger { get; set; }
         public static PeachtreeSession Session { get; set; }
         public static Company Company { get; set; }
-        public ConcurrentQueue<object> queue = new ConcurrentQueue<object>();
+        public ConcurrentQueue<object> Queue = new ConcurrentQueue<object>();
         private EmployeeInformation EmployeeInformation { get; } = new EmployeeInformation();
         private void OpenCompany(CompanyIdentifier companyId)
         {
@@ -71,7 +69,7 @@ namespace IWErpnextPoll
         {
             Company?.Close();
         }
-        public void OpenSession(string appKeyID)
+        public void OpenSession(string appKeyId)
         {
             try
             {
@@ -84,7 +82,7 @@ namespace IWErpnextPoll
                 Session = new PeachtreeSession();
 
                 // start the new session
-                Session.Begin(appKeyID);
+                Session.Begin(appKeyId);
             }
             catch (Sage.Peachtree.API.Exceptions.ApplicationIdentifierExpiredException e)
             {
@@ -116,12 +114,19 @@ namespace IWErpnextPoll
 
         public enum ServiceState
         {
+            // ReSharper disable once InconsistentNaming
             SERVICE_STOPPED = 0x00000001,
+            // ReSharper disable once InconsistentNaming
             SERVICE_START_PENDING = 0x00000002,
+            // ReSharper disable once InconsistentNaming
             SERVICE_STOP_PENDING = 0x00000003,
+            // ReSharper disable once InconsistentNaming
             SERVICE_RUNNING = 0x00000004,
+            // ReSharper disable once InconsistentNaming
             SERVICE_CONTINUE_PENDING = 0x00000005,
+            // ReSharper disable once InconsistentNaming
             SERVICE_PAUSE_PENDING = 0x00000006,
+            // ReSharper disable once InconsistentNaming
             SERVICE_PAUSED = 0x00000007,
         }
 
@@ -176,16 +181,17 @@ namespace IWErpnextPoll
             _canRequest = true;
             Logger.Information("Service started");
             Logger.Debug("State = {0}", _canRequest);
-            OpenSession(APPLICATION_ID);
+            OpenSession(ApplicationId);
             this.StartTimer();
             this.SetServiceStatus(ServiceState.SERVICE_RUNNING);
         }
 
         private void ClearQueue()
         {
-            if (queue.IsEmpty || Company == null || Company.IsClosed) return;
+            Logger.Information("Version {@Version}", Constants.Version);
+            if (Queue.IsEmpty || Company == null || Company.IsClosed) return;
             var handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
-            while (queue.TryDequeue(out var document) && Session.SessionActive)
+            while (Queue.TryDequeue(out var document) && Session.SessionActive)
             {
                 handler.Handle(document);
             }
@@ -231,11 +237,13 @@ namespace IWErpnextPoll
             {
                 Logger.Debug("Service cannot request: {0}", _canRequest);
                 return;
-            };
+            }
+            
             if (Company == null || Company.IsClosed)
             {
                 DiscoverAndOpenCompany();
             }
+            
             if (Session != null && Session.SessionActive && Company != null)
             {
                 if (!Company.IsClosed)
@@ -259,7 +267,7 @@ namespace IWErpnextPoll
 
         private CompanyIdentifier DiscoverCompany()
         {
-            bool Predicate(CompanyIdentifier c) { return c.CompanyName == COMPANY_NAME; }
+            bool Predicate(CompanyIdentifier c) { return c.CompanyName == CompanyName; }
             var companies = Session.CompanyList();
             var company = companies.Find(Predicate);
             return company;
@@ -280,9 +288,9 @@ namespace IWErpnextPoll
          */
         private void GetDocuments()
         {
-            var purchaseOrderCommand = new PurchaseOrderCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.purchase_order.get_purchase_orders_for_sage");
-            var salesOrderCommand = new SalesOrderCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_order.get_sales_orders_for_sage");
-            var salesInvoiceCommand = new SalesInvoiceCommand(serverURL: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_invoice.get_sales_invoices_for_sage");
+            var purchaseOrderCommand = new PurchaseOrderCommand(serverUrl: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.purchase_order.get_purchase_orders_for_sage");
+            var salesOrderCommand = new SalesOrderCommand(serverUrl: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_order.get_sales_orders_for_sage");
+            var salesInvoiceCommand = new SalesInvoiceCommand(serverUrl: $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.sales_invoice.get_sales_invoices_for_sage");
 
             var salesOrders = salesOrderCommand.Execute();
             var purchaseOrders = purchaseOrderCommand.Execute();
@@ -300,7 +308,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.queue.Enqueue(item);
+                this.Queue.Enqueue(item);
             }
 
         }
@@ -310,7 +318,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.queue.Enqueue(item);
+                this.Queue.Enqueue(item);
             }
 
         }
@@ -320,7 +328,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.queue.Enqueue(item);
+                this.Queue.Enqueue(item);
             }
         }
 
@@ -335,6 +343,6 @@ namespace IWErpnextPoll
         }
 
         [DllImport("advapi32.dll", SetLastError = true)]
-        private static extern bool SetServiceStatus(System.IntPtr handle, ref ServiceStatus serviceStatus);
+        private static extern bool SetServiceStatus(IntPtr handle, ref ServiceStatus serviceStatus);
     }
 }

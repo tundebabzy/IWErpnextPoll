@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 
 namespace IWErpnextPoll
 {
@@ -60,6 +59,8 @@ namespace IWErpnextPoll
             { "Wisconsin", "WI" },
             { "Wyoming", "WY" }
         };
+
+        public const string Version = "1.4.7";
     }
 
 }

@@ -1,6 +1,5 @@
 ﻿using Sage.Peachtree.API;
 using Serilog;
-using System;
 
 namespace IWErpnextPoll
 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sage.Peachtree.API;
 using Serilog;
-using Serilog.Core;
 
 namespace IWErpnextPoll
 {
