@@ -4,17 +4,14 @@ using System;
 
 namespace IWErpnextPoll
 {
-    class Resource
+    internal class Resource
     {
         private readonly IRestClient _restClient;
         private const string ApiSecret = "78e5615db2830e3";
         private const string ApiToken = "4e7b90c8fc265ac";
-        public string BaseUrl { get; set; }
-        public string Doctype { get; set; }
-        public string Param { get; set; }
+        private string Param { get; set; }
         public Resource(string baseUrl, string customerName = "")
         {
-            BaseUrl = baseUrl;
             Param = customerName;
             _restClient = new RestClient(baseUrl);
             _restClient.UseSerializer(() => new JsonSerializer {DateFormat = "yyyy-MM-dd"});
@@ -24,7 +21,7 @@ namespace IWErpnextPoll
         public IRestResponse<CustomerResponse> GetCustomerDetails()
         {
             var request = new RestRequest(Method.GET);
-            if (!String.IsNullOrEmpty(Param))
+            if (!string.IsNullOrEmpty(Param))
             {
                 request.AddQueryParameter("cn", Param);
             }
@@ -59,6 +56,10 @@ namespace IWErpnextPoll
         public IRestResponse<SupplierResponse> GetSupplierDetails()
         {
             var request = new RestRequest(Method.GET);
+            if (!string.IsNullOrEmpty(Param))
+            {
+                request.AddQueryParameter("cn", Param);
+            }
             var response = _restClient.Execute<SupplierResponse>(request);
             return response;
         }
@@ -138,7 +139,5 @@ namespace IWErpnextPoll
             var response = _restClient.Execute(request);
             return response;
         }
-
-
     }
 }

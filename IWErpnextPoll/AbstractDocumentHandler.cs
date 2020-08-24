@@ -27,36 +27,12 @@ namespace IWErpnextPoll
             Company = c;
             Logger = logger;
             EmployeeInformation = employeeInformation;
-            // VendorReferences = VendorToReferenceDictionary();
-            // ItemReferences = InventoryItemToReferenceDictionary();
         }
 
         protected AbstractDocumentHandler(Company c, ILogger logger)
         {
             Company = c;
             Logger = logger;
-        }
-
-        private Dictionary<string, EntityReference<Vendor>> VendorToReferenceDictionary()
-        {
-            var dictionary = new Dictionary<string, EntityReference<Vendor>>();
-            var vendorList = Company.Factories.VendorFactory.List();
-            vendorList.Load();
-            foreach (var vendor in vendorList)
-            {
-                try
-                {
-                    dictionary.Add(vendor.Name, vendor.Key);
-                }
-                catch (ArgumentException e)
-                {
-                    Logger.Debug(e.Message);
-                    Logger.Debug("Key was -> {0}, value was {1}", vendor.Name, vendor.Key);
-                    Logger.Debug("Moving on.");
-                }
-            }
-
-            return dictionary;
         }
 
         protected static CustomerDocument GetCustomerFromErpNext(string name)
@@ -68,7 +44,7 @@ namespace IWErpnextPoll
 
         protected static SupplierDocument GetSupplierFromErpNext(string name)
         {
-            var receiver = new SupplierCommand(name, $"{GetCustomerResourceServerAddress()}");
+            var receiver = new SupplierCommand(name, $"{GetSupplierResourceServerAddress()}");
             var supplierDocument = receiver.Execute();
             return supplierDocument.Data.Message;
         }
@@ -111,6 +87,11 @@ namespace IWErpnextPoll
                 Logger.Debug($"Could not get customer entity reference. @{e.Message}");
                 return null;
             }
+        }
+        
+        private static string GetSupplierResourceServerAddress()
+        {
+            return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.supplier.get_supplier_details";
         }
 
         protected EntityReference<Vendor> GetVendorEntityReference(string vendorId)

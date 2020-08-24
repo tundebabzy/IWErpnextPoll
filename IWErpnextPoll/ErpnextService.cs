@@ -13,8 +13,9 @@ namespace IWErpnextPoll
         private const string CompanyName = "Electro-Comp Tape & Reel Services, LLC";
         private const string ApplicationId = "41Dzi73wlWhIwx8yTdVQ6dJRbGU9nJtcu47x2rY4MOS7u9tAALysow==VK7xyIAjtHr7JDWfDXJYhVLelt+UlNwmGpSMCjISTVFfEo6e0pRzQR7cnDraS9HTpJnP34yIDrgC4nA7QU1rMCPWNQ4eOs+7+dm5AV/mymbQWUEx+tNEQhDka3PJi6nFXkZEaDa+I6bhbQnAAg+65ZD6/+IJ02CjaAGCAzaRiQebwojCJiKuSKoiDk/xkDTuD975uiTLcGZ3ZrzByxfoPdaUkAPQRTaEFmiARO/eBtNg7nSXUvVaEF0NddSjTyf6jbwycx6NnzmRWk/qBJPW0g==";
         private bool _canRequest = true;
+        private Timer _timer;
         private ILogger Logger { get; set; }
-        public static PeachtreeSession Session { get; set; }
+        private static PeachtreeSession Session { get; set; }
         public static Company Company { get; set; }
         public ConcurrentQueue<object> Queue = new ConcurrentQueue<object>();
         private EmployeeInformation EmployeeInformation { get; } = new EmployeeInformation();
@@ -23,7 +24,7 @@ namespace IWErpnextPoll
             // Request authorization from Sage 50 for our third-party application.
             try
             {
-                AuthorizationResult authorizationResult = Session.RequestAccess(companyId);
+                var authorizationResult = Session.RequestAccess(companyId);
 
                 // Check to see we were granted access to Sage 50 company, if so, go ahead and open the company.
                 if (authorizationResult == AuthorizationResult.Granted)
@@ -65,11 +66,12 @@ namespace IWErpnextPoll
             EmployeeInformation.Load(Company);
         }
 
-        private void CloseCompany()
+        private static void CloseCompany()
         {
             Company?.Close();
         }
-        public void OpenSession(string appKeyId)
+
+        private void OpenSession(string appKeyId)
         {
             try
             {
@@ -104,7 +106,7 @@ namespace IWErpnextPoll
 
         // Closes current Sage 50 Session
         //
-        private void CloseSession()
+        private static void CloseSession()
         {
             if (Session != null && Session.SessionActive)
             {
@@ -182,8 +184,8 @@ namespace IWErpnextPoll
             Logger.Information("Service started");
             Logger.Debug("State = {0}", _canRequest);
             OpenSession(ApplicationId);
-            this.StartTimer();
-            this.SetServiceStatus(ServiceState.SERVICE_RUNNING);
+            StartTimer();
+            SetServiceStatus(ServiceState.SERVICE_RUNNING);
         }
 
         private void ClearQueue()
@@ -200,14 +202,14 @@ namespace IWErpnextPoll
 
         private void StartTimer()
         {
-            var timer = new Timer
+            _timer = new Timer
             {
                 Interval = Constants.TimerInterval
             };
-            timer.Elapsed += new ElapsedEventHandler(this.OnTimer);
-            timer.Start();
+            _timer.Elapsed += OnTimer;
+            _timer.Start();
             Logger.Information("Timer started");
-            Logger.Information("Timer interval is {0} minutes", timer.Interval / 60000);
+            Logger.Information("Timer interval is {0} minutes", _timer.Interval / 60000);
         }
 
         /**
@@ -220,7 +222,7 @@ namespace IWErpnextPoll
             {
                 dwCurrentState = serviceState
             };
-            SetServiceStatus(this.ServiceHandle, ref serviceStatus);
+            SetServiceStatus(ServiceHandle, ref serviceStatus);
         }
 
         /**
@@ -275,7 +277,7 @@ namespace IWErpnextPoll
 
         private void DiscoverAndOpenCompany()
         {
-            CompanyIdentifier company = DiscoverCompany();
+            var company = DiscoverCompany();
             if (company != null)
             {
                 OpenCompany(company);
@@ -337,9 +339,15 @@ namespace IWErpnextPoll
             _canRequest = false;
             CloseCompany();
             CloseSession();
+            StopTimer();
+            SetServiceStatus(ServiceState.SERVICE_STOPPED);
+            Logger.Debug("Timer stopped");
+        }
 
-            Logger.Information("Service stopped");
-            this.SetServiceStatus(ServiceState.SERVICE_STOPPED);
+        private void StopTimer()
+        {
+            _timer.Stop();
+            _timer.Close();
         }
 
         [DllImport("advapi32.dll", SetLastError = true)]

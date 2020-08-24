@@ -65,16 +65,6 @@ namespace IWErpnextPoll
             return supplier;
         }
 
-        private void AddContacts(Vendor supplier, SupplierDocument supplierDocument)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void AddAddresses(Vendor supplier, SupplierDocument supplierDocument)
-        {
-            throw new NotImplementedException();
-        }
-
         private SupplierDocument GetSupplierDetails(string supplierName)
         {
             var receiver = new SupplierCommand(supplierName, $"{GetResourceServerAddress()}?cn={supplierName}");

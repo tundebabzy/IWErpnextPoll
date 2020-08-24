@@ -2,7 +2,7 @@
 
 namespace IWErpnextPoll
 {
-    class CustomerCommand
+    internal class CustomerCommand
     {
         private readonly Resource _receiver;
         // private string CustomerName { get; set; }
@@ -10,7 +10,6 @@ namespace IWErpnextPoll
         public CustomerCommand(string customerName, string serverUrl = "https://portal.electrocomptr.com")
         {
             _receiver = new Resource(serverUrl, customerName);
-            // CustomerName = customerName;
         }
 
         public IRestResponse<CustomerResponse> Execute()

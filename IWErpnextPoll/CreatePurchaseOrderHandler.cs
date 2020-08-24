@@ -26,10 +26,10 @@ namespace IWErpnextPoll
             var purchaseOrder = Company.Factories.PurchaseOrderFactory.Create();
             if (supplierEntityReference == null)
             {
-                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
+                Logger.Debug("Supplier {@name} in {@Document} was not found in Sage.", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
                 purchaseOrder = null;
                 SetNext(new CreateSupplierHandler(Company, Logger, EmployeeInformation));
-                Logger.Debug("Customer {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
+                Logger.Debug("Supplier {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
             }
             else if (purchaseOrder != null)
             {
@@ -83,8 +83,12 @@ namespace IWErpnextPoll
         private void AddLine(PurchaseOrder purchaseOrderDocument, PurchaseOrderItem line)
         {
             var _ = purchaseOrderDocument.AddLine();
-            // var itemReference = ItemReferences[line.ItemCode];
             var itemReference = GetItemEntityReference(line.ItemCode);
+            if (itemReference == null)
+            {
+                Logger.Debug("{@Item} was not found in Sage. Please create it manually for to be imported", line.ItemCode);
+                return;
+            }
             var stockItem = Company.Factories.StockItemFactory.Load(itemReference as EntityReference<StockItem>);
             _.AccountReference = stockItem.COGSAccountReference;
             _.Quantity = line.Qty;

@@ -4,8 +4,9 @@ namespace IWErpnextPoll
 {
     public static class Constants
     {
-        public const string ServerUrl = "https://portal.electrocomptr.com";
-        public const int TimerInterval = 600000;
+        public const string ServerUrl = "https://dev.electrocomptr.com";
+        public const int TimerInterval = 120000;
+        public const string Version = "1.4.9";
         public static readonly StringDictionary States = new StringDictionary
         {
             { "Alabama", "AL" },
@@ -59,8 +60,6 @@ namespace IWErpnextPoll
             { "Wisconsin", "WI" },
             { "Wyoming", "WY" }
         };
-
-        public const string Version = "1.4.7";
     }
 
 }

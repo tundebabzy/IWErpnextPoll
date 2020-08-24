@@ -30,7 +30,8 @@ namespace IWErpnextPoll
             var customerEntityReference = GetCustomerEntityReference(customerDocument?.OldCustomerId);
             if (customerEntityReference == null)
             {
-                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
+                Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer,
+                    document.Name);
                 salesInvoice = null;
                 SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
                 Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
@@ -40,7 +41,8 @@ namespace IWErpnextPoll
             return salesInvoice;
         }
 
-        private SalesInvoice _createNewSalesInvoice(SalesInvoiceDocument document, SalesInvoice salesInvoice, EntityReference<Customer> customerEntityReference)
+        private SalesInvoice _createNewSalesInvoice(SalesInvoiceDocument document, SalesInvoice salesInvoice,
+            EntityReference<Customer> customerEntityReference)
         {
             try
             {
@@ -60,7 +62,7 @@ namespace IWErpnextPoll
                 AddSalesOrderData(document, salesInvoice);
 
                 salesInvoice.Save();
-                Logger.Information("Sales Invoice - {0} was saved successfully", document.Name);
+                Logger.Information("Sales Invoice - {@Name} was saved successfully", document.Name);
             }
             catch (Sage.Peachtree.API.Exceptions.RecordInUseException)
             {
