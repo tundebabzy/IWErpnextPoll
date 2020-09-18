@@ -94,30 +94,79 @@ namespace IWErpnextPoll
             }
         }
 
-        private void AddAddresses(Customer customer, CustomerDocument customerDocument)
+        private static void AddAddresses(Customer customer, CustomerDocument customerDocument)
         {
-            AddressDocument billingAddress = customerDocument.Addresses.Find(x => x.AddressType == "Billing");
-            AddressDocument shippingAddress = customerDocument.Addresses.Find(x => x.AddressType == "Shipping");
+            var billingAddress = customerDocument.Addresses.Find(x => x.AddressType == "Billing");
+            var shippingAddress = customerDocument.Addresses.Find(x => x.AddressType == "Shipping");
             if (billingAddress != null)
             {
-                var state = String.IsNullOrEmpty(billingAddress.State) ? "" : char.ToUpper(billingAddress.State[0]) + billingAddress.State.Substring(1).ToLower();
+                var state = TransformState(billingAddress.State);
                 customer.BillToContact.Address.Address1 = billingAddress.AddressLine1;
                 customer.BillToContact.Address.Address2 = billingAddress.AddressLine2;
                 customer.BillToContact.Address.City = billingAddress.City;
-                customer.BillToContact.Address.State = String.IsNullOrEmpty(state) ? "" : Constants.States[state];
+                customer.BillToContact.Address.State = GetStateFromPredefinedStates(state);
                 customer.BillToContact.Address.Zip = billingAddress.Pincode;
                 customer.BillToContact.Address.Country = billingAddress.Country;
             }
             if (shippingAddress != null)
             {
-                var state = String.IsNullOrEmpty(shippingAddress.State) ? "" : char.ToUpper(shippingAddress.State[0]) + shippingAddress.State.Substring(1).ToLower();
+                var state = TransformState(shippingAddress.State);
                 customer.ShipToContact.Address.Address1 = shippingAddress.AddressLine1;
                 customer.BillToContact.Address.Address2 = shippingAddress.AddressLine2;
                 customer.BillToContact.Address.City = shippingAddress.City;
-                customer.BillToContact.Address.State = String.IsNullOrEmpty(state) ? "" : Constants.States[state];
+                customer.BillToContact.Address.State = GetStateFromPredefinedStates(state);
                 customer.BillToContact.Address.Zip = shippingAddress.Pincode;
                 customer.BillToContact.Address.Country = shippingAddress.Country;
             }
+        }
+
+        /// <summary>
+        /// Returns the two character form of a US state.
+        /// If <code>state</code> is already in two character form and is a value
+        /// in <code>Constants.States</code>, the match is returned.
+        /// If <code>state</code> is a key in <code>Constants.States</code>, the
+        /// value of the key is returned
+        /// Else, a string that is the first two characters of <code>state</code>
+        /// is returned. 
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        private static string GetStateFromPredefinedStates(string state)
+        {
+            if (string.IsNullOrEmpty(state)) return "";
+
+            if (state.Length == 2 && Constants.States.ContainsValue(state.ToUpper()))
+            {
+                return state.ToUpper();
+            }
+
+            if (Constants.States.ContainsKey(state))
+            {
+                return Constants.States[state];
+            }
+
+            return state.Substring(0, 2);
+        }
+
+        /// <summary>
+        /// Returns the state as either unchanged if it is two characters long
+        /// or in title case if not (e.g North Carolina)
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        private static string TransformState(string state)
+        {
+            if (string.IsNullOrEmpty(state))
+            {
+                return "";
+            }
+
+            if (state.Length == 2)
+            {
+                return state.ToUpper();
+            }
+
+            return char.ToUpper(state[0]) + state.Substring(1).ToLower();
         }
 
         private void AddSalesRep(Customer customer, CustomerDocument customerDocument)

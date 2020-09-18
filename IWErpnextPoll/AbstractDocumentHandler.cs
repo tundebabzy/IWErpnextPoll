@@ -121,6 +121,75 @@ namespace IWErpnextPoll
             filter.Filters = filterParams;
             return filter;
         }
+        
+        protected InventoryItem LoadInventoryItem(EntityReference itemReference)
+        {
+            var specializedType = itemReference.SpecializedType;
+            if (specializedType == typeof(ServiceItem))
+            {
+                return Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
+            }
+
+            if (specializedType == typeof(StockItem))
+            {
+                return Company.Factories.StockItemFactory.Load(itemReference as EntityReference<StockItem>);
+            }
+
+            if (specializedType == typeof(DescriptionOnlyItem))
+            {
+                return Company.Factories.DescriptionOnlyItemFactory.Load(
+                    itemReference as EntityReference<DescriptionOnlyItem>);
+            }
+            
+            if (specializedType == typeof(ActivityItem))
+            {
+                return Company.Factories.ActivityItemFactory.Load(itemReference as EntityReference<ActivityItem>);
+            }
+            
+            if (specializedType == typeof(AssemblyItem))
+            {
+                return Company.Factories.AssemblyItemFactory.Load(itemReference as EntityReference<AssemblyItem>);
+            }
+            
+            if (specializedType == typeof(ChargeItem))
+            {
+                return Company.Factories.ChargeItemFactory.Load(itemReference as EntityReference<ChargeItem>);
+            }
+            
+            if (specializedType == typeof(LaborItem))
+            {
+                return Company.Factories.LaborItemFactory.Load(itemReference as EntityReference<LaborItem>);
+            }
+            
+            if (specializedType == typeof(MasterStockItem))
+            {
+                return Company.Factories.MasterStockItemFactory.Load(itemReference as EntityReference<MasterStockItem>);
+            }
+            
+            if (specializedType == typeof(NonStockItem))
+            {
+                return Company.Factories.NonStockItemFactory.Load(itemReference as EntityReference<NonStockItem>);
+            }
+            
+            if (specializedType == typeof(SerializedAssemblyItem))
+            {
+                return Company.Factories.SerializedAssemblyItemFactory.Load(
+                    itemReference as EntityReference<SerializedAssemblyItem>);
+            }
+            
+            if (specializedType == typeof(SerializedStockItem))
+            {
+                return Company.Factories.SerializedStockItemFactory.Load(
+                    itemReference as EntityReference<SerializedStockItem>);
+            }
+            
+            if (specializedType == typeof(SubStockItem))
+            {
+                return Company.Factories.SubStockItemFactory.Load(itemReference as EntityReference<SubStockItem>);
+            }
+
+            return null;
+        }
 
         public IDocumentHandler SetNext(IDocumentHandler handler)
         {

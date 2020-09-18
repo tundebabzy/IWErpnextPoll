@@ -137,7 +137,6 @@ namespace IWErpnextPoll
             else if (line.ForHandling != 1)
             {
                 var _ = salesOrder.AddLine();
-                // var itemReference = ItemReferences[line.ItemCode];
                 var itemReference = GetItemEntityReference(line.ItemCode);
                 if (itemReference == null)
                 {
@@ -145,13 +144,45 @@ namespace IWErpnextPoll
                     Logger.Debug("Item {@name} needs to be created in Sage", line.ItemCode);
                     return;
                 }
-                var item = Company.Factories.ServiceItemFactory.Load(itemReference as EntityReference<ServiceItem>);
-                _.AccountReference = item.SalesAccountReference;
+
+                var item = LoadInventoryItem(itemReference);
+                _.AccountReference = GetSalesAccountReference(item);
                 _.Quantity = line.Qty;
                 _.Description = line.Description;
                 _.UnitPrice = Decimal.Divide(line.Amount, line.Qty);    // _.CalculateUnitCost(_.Quantity, _.Amount);
                 _.Amount = _.CalculateAmount(_.Quantity, _.UnitPrice);
                 _.InventoryItemReference = itemReference;
+            }
+        }
+
+        private static EntityReference<Account> GetSalesAccountReference(InventoryItem item)
+        {
+            switch (item)
+            {
+                case ServiceItem serviceItem:
+                    return serviceItem.SalesAccountReference;
+                case StockItem stockItem:
+                    return stockItem.SalesAccountReference;
+                case ActivityItem activityItem:
+                    return activityItem.SalesAccountReference;
+                case AssemblyItem assemblyItem:
+                    return assemblyItem.SalesAccountReference;
+                case ChargeItem chargeItem:
+                    return chargeItem.SalesAccountReference;
+                case LaborItem laborItem:
+                    return laborItem.SalesAccountReference;
+                case MasterStockItem masterStockItem:
+                    return masterStockItem.SalesAccountReference;
+                case NonStockItem nonStockItem:
+                    return nonStockItem.SalesAccountReference;
+                case SerializedAssemblyItem serializedAssemblyItem:
+                    return serializedAssemblyItem.SalesAccountReference;
+                case SerializedStockItem serializedStockItem:
+                    return serializedStockItem.SalesAccountReference;
+                case SubStockItem subStockItem:
+                    return subStockItem.SalesAccountReference;
+                default:
+                    return null;
             }
         }
     }

@@ -109,9 +109,12 @@ namespace IWErpnextPoll
             var references = (List<string>)GetSalesOrderReferences(invoiceDocument);
             foreach (var reference in references)
             {
-                LoadSalesOrderFromName(reference, out var salesOrders);
-                // Sage takes just one Sales Order in the Sales invoice. SalesOrderList should only have one item
-                AddSalesOrderData(salesInvoice, reference, salesOrders.FirstOrDefault(), invoiceDocument.Items);
+                if (!String.IsNullOrEmpty(reference))
+                {
+                    LoadSalesOrderFromName(reference, out var salesOrders);
+                    // Sage takes just one Sales Order in the Sales invoice. SalesOrderList should only have one item
+                    AddSalesOrderData(salesInvoice, reference, salesOrders.FirstOrDefault(), invoiceDocument.Items);
+                }
             }
         }
 
