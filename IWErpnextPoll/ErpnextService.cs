@@ -234,10 +234,9 @@ namespace IWErpnextPoll
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
             Logger.Information("Timer callback called");
-            // if (_canRequest && (DateTime.Now.Hour > 17 || DateTime.Now.Hour < 6))
-            if (!_canRequest)
+            if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
             {
-                Logger.Debug("Service cannot request: {0}", _canRequest);
+                Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
                 return;
             }
             
