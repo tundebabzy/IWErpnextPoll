@@ -160,7 +160,7 @@ namespace IWErpnextPoll
             AddSalesOrderLinesFromSalesOrder(salesInvoice, salesOrderReference, salesOrder, salesInvoiceItems);
         }
 
-        private static void AddSalesOrderLinesFromSalesOrder(SalesInvoice salesInvoice, string salesOrderReference,
+        private void AddSalesOrderLinesFromSalesOrder(SalesInvoice salesInvoice, string salesOrderReference,
             SalesOrder salesOrders, List<SalesInvoiceItem> salesInvoiceItems)
         {
             // note: ElectroComp has said they will not be having multiple sales orders linked
@@ -178,7 +178,7 @@ namespace IWErpnextPoll
             }
         }
 
-        private static void SetSalesInvoiceSalesOrderLineData(SalesInvoice salesInvoice,
+        private void SetSalesInvoiceSalesOrderLineData(SalesInvoice salesInvoice,
             SalesOrderLine salesOrderLine, SalesInvoiceItem salesInvoiceItem)
         {
             if (salesInvoiceItem.ForFreight == 1)
@@ -191,7 +191,7 @@ namespace IWErpnextPoll
                 _.Quantity = salesInvoiceItem.Qty;
                 _.Amount = salesInvoiceItem.Amount;
                 _.UnitPrice = Decimal.Divide(salesInvoiceItem.Amount, salesInvoiceItem.Qty); // _.CalculateUnitCost(_.Quantity, _.Amount);
-                _.Description = salesInvoiceItem.Description;
+                _.Description = GetLineDescription(salesInvoiceItem);
             }
         }
 

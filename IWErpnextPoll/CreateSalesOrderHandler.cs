@@ -148,7 +148,7 @@ namespace IWErpnextPoll
                 var item = LoadInventoryItem(itemReference);
                 _.AccountReference = GetSalesAccountReference(item);
                 _.Quantity = line.Qty;
-                _.Description = line.Description;
+                _.Description = GetLineDescription(line);
                 _.UnitPrice = Decimal.Divide(line.Amount, line.Qty);    // _.CalculateUnitCost(_.Quantity, _.Amount);
                 _.Amount = _.CalculateAmount(_.Quantity, _.UnitPrice);
                 _.InventoryItemReference = itemReference;

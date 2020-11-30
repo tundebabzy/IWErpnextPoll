@@ -49,6 +49,26 @@ namespace IWErpnextPoll
             return supplierDocument.Data.Message;
         }
 
+        protected string GetLineDescription(SalesOrderItem line)
+        {
+            var text = line.PartNumber;
+            text += String.IsNullOrEmpty(line.PartNumber2) ? "" : $", RPN:{line.PartNumber2}";
+            text += String.IsNullOrEmpty(line.Manufacturer) ? "" : $", MFR:{line.Manufacturer}";
+            text += String.IsNullOrEmpty(line.DateCode) ? "" : $", D/C:{line.DateCode}";
+            text += String.IsNullOrEmpty(line.Msl) ? "" : $", MSL:{line.Msl}";
+            return text;
+        }
+
+        protected string GetLineDescription(SalesInvoiceItem line)
+        {
+            var text = line.PartNumber;
+            text += String.IsNullOrEmpty(line.PartNumber2) ? "" : $", RPN:{line.PartNumber2}";
+            text += String.IsNullOrEmpty(line.Manufacturer) ? "" : $", MFR:{line.Manufacturer}";
+            text += String.IsNullOrEmpty(line.DateCode) ? "" : $", D/C:{line.DateCode}";
+            text += String.IsNullOrEmpty(line.Msl) ? "" : $", MSL:{line.Msl}";
+            return text;
+        }
+
         private static string GetCustomerResourceServerAddress()
         {
             return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
