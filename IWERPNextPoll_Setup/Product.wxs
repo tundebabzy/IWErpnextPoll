@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.4.12" Manufacturer="IWW" UpgradeCode="50ED81B2-255C-4478-B288-5933310BB059">
+	<Product Id="*" Name="IWErpnextPoll" Language="1033" Version="1.4.13" Manufacturer="IWW" UpgradeCode="50ED81B2-255C-4478-B288-5933310BB059">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
