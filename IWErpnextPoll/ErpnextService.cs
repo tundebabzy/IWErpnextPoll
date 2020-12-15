@@ -243,6 +243,9 @@ namespace IWErpnextPoll
             if (Company == null || Company.IsClosed)
             {
                 DiscoverAndOpenCompany();
+            } else
+            {
+                Logger.Debug("Company is null: {0}; Company is closed: {1}", Company == null, Company?.IsClosed);
             }
             
             if (Session != null && Session.SessionActive && Company != null)
@@ -250,6 +253,9 @@ namespace IWErpnextPoll
                 if (!Company.IsClosed)
                 {
                     GetDocumentsThenProcessQueue();
+                } else
+                {
+                    Logger.Debug("Session is null: {0}, Session is active: {1}, Company is null: {2}", Session == null, Session?.SessionActive, Company == null);
                 }
             }
             else

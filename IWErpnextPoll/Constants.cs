@@ -6,7 +6,7 @@ namespace IWErpnextPoll
     {
         public const string ServerUrl = "https://dev.electrocomptr.com";
         public const int TimerInterval = 120000;
-        public const string Version = "1.4.12-dev";
+        public const string Version = "1.4.13-dev";
         public static readonly StringDictionary States = new StringDictionary
         {
             { "Alabama", "AL" },
