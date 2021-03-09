@@ -250,10 +250,14 @@ namespace IWErpnextPoll
             
             if (Session != null && Session.SessionActive && Company != null)
             {
-                if (!Company.IsClosed)
+                if (!Company.IsClosed && Queue.IsEmpty)
                 {
                     GetDocumentsThenProcessQueue();
-                } else
+                }
+                else if (!Queue.IsEmpty) {
+                    Logger.Debug("Queue is not yet empty. Postponed processing till next heartbeat");
+                }
+                else
                 {
                     Logger.Debug("Session is null: {0}, Session is active: {1}, Company is null: {2}", Session == null, Session?.SessionActive, Company == null);
                 }
