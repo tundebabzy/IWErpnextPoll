@@ -254,8 +254,10 @@ namespace IWErpnextPoll
                 {
                     GetDocumentsThenProcessQueue();
                 }
-                else if (!Queue.IsEmpty) {
-                    Logger.Debug("Queue is not yet empty. Postponed processing till next heartbeat");
+                else if (!Company.IsClosed && !Queue.IsEmpty) {
+                    Logger.Debug("Queue is not yet empty. Queue will be reset. Consider increasing the poll interval.");
+                    Queue = new ConcurrentQueue<object>();
+                    GetDocumentsThenProcessQueue();
                 }
                 else
                 {
@@ -319,7 +321,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
 
         }
@@ -329,7 +331,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
 
         }
@@ -339,7 +341,7 @@ namespace IWErpnextPoll
             if (response?.Message == null) return;
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
         }
 
