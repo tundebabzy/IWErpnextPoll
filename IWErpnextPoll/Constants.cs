@@ -5,7 +5,7 @@ namespace IWErpnextPoll
     public static class Constants
     {
         public const string ServerUrl = "https://portal.electrocomptr.com";
-        public const int TimerInterval = 1200000;
+        public const int TimerInterval = 1800000;
         public const string Version = "1.4.13";
         public static readonly StringDictionary States = new StringDictionary
         {
