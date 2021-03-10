@@ -35,18 +35,32 @@ namespace IWErpnextPoll
             Logger = logger;
         }
 
-        protected static CustomerDocument GetCustomerFromErpNext(string name)
+        protected static CustomerDocument GetCustomerFromErpNext(string name, ILogger logger=null)
         {
             var receiver = new CustomerCommand(name, $"{GetCustomerResourceServerAddress()}");
             var customerDocument = receiver.Execute();
+
+            if (customerDocument.StatusCode != System.Net.HttpStatusCode.OK && logger != null)
+            {
+                logger.Debug("Server did not return customer information");
+                logger.Error(customerDocument.Content);
+                return null;
+            }
             return customerDocument.Data.Message;
         }
 
-        protected static SupplierDocument GetSupplierFromErpNext(string name)
+        protected static SupplierDocument GetSupplierFromErpNext(string name, ILogger logger=null)
         {
             var receiver = new SupplierCommand(name, $"{GetSupplierResourceServerAddress()}");
             var supplierDocument = receiver.Execute();
-            return supplierDocument.Data.Message;
+
+            if (supplierDocument.StatusCode != System.Net.HttpStatusCode.OK && logger != null)
+            {
+                logger.Debug("Server did not return supplier information");
+                logger.Error(supplierDocument.Content);
+                return null;
+            }
+            return supplierDocument.Data?.Message;
         }
 
         protected string GetLineDescription(SalesOrderItem line)
@@ -93,6 +107,11 @@ namespace IWErpnextPoll
 
         protected EntityReference<Customer> GetCustomerEntityReference(string documentOldCustomerId)
         {
+            if (documentOldCustomerId == null)
+            {
+                return null;
+            }
+
             try
             {
                 var customerList = Company.Factories.CustomerFactory.List();
