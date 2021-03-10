@@ -215,7 +215,7 @@ namespace IWErpnextPoll
         {
             _timer = new Timer
             {
-                Interval = Constants.TimerInterval
+                Interval = 30000
             };
             _timer.Elapsed += OnTimer;
             _timer.Start();
@@ -245,27 +245,36 @@ namespace IWErpnextPoll
         private void OnTimer(object sender, ElapsedEventArgs e)
         {
             Logger.Information("Timer callback called");
+            if (_timer.Interval != Constants.TimerInterval)
+            {
+                DiscoverAndOpenCompany();
+                IncreaseTimerInterval();
+                return;
+            }
+
             if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
             {
                 Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
                 return;
             }
-            
+
             if (Company == null || Company.IsClosed)
             {
                 DiscoverAndOpenCompany();
-            } else
+            }
+            else
             {
                 Logger.Debug("Company is null: {0}; Company is closed: {1}", Company == null, Company?.IsClosed);
             }
-            
+
             if (Session != null && Session.SessionActive && Company != null)
             {
                 if (!Company.IsClosed && Queue.IsEmpty)
                 {
                     GetDocumentsThenProcessQueue();
                 }
-                else if (!Company.IsClosed && !Queue.IsEmpty) {
+                else if (!Company.IsClosed && !Queue.IsEmpty)
+                {
                     Logger.Debug("Queue is not yet empty. Queue will be reset. Consider increasing the poll interval.");
                     Queue = new ConcurrentQueue<object>();
                     GetDocumentsThenProcessQueue();
@@ -281,6 +290,11 @@ namespace IWErpnextPoll
                 Logger.Debug("Session is active: {0}", Session != null && Session.SessionActive);
                 Logger.Debug("Company is initialized: {0}", Company != null);
             }
+        }
+
+        private void IncreaseTimerInterval()
+        {
+            _timer.Interval = Constants.TimerInterval;
         }
 
         private void GetDocumentsThenProcessQueue()
