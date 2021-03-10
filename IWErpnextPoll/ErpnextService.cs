@@ -62,13 +62,18 @@ namespace IWErpnextPoll
 
         private void InitSalesRepresentativeList()
         {
-            EmployeeInformation.Logger = Logger;
-            EmployeeInformation.Load(Company);
+            if (EmployeeInformation == null || EmployeeInformation.Data == null)
+            {
+                EmployeeInformation.Logger = Logger;
+                EmployeeInformation.Load(Company);
+            }
         }
 
         private static void CloseCompany()
         {
             Company?.Close();
+            Company?.Dispose();
+            Company = null;
         }
 
         private void OpenSession(string appKeyId)
@@ -111,6 +116,7 @@ namespace IWErpnextPoll
             if (Session != null && Session.SessionActive)
             {
                 Session.End();
+                Session.Dispose();
             }
         }
 
@@ -196,6 +202,11 @@ namespace IWErpnextPoll
             while (Queue.TryDequeue(out var document) && Session.SessionActive)
             {
                 handler.Handle(document);
+            }
+
+            if (Queue.IsEmpty)
+            {
+                CloseCompany();
             }
         }
 
@@ -289,10 +300,11 @@ namespace IWErpnextPoll
         private void DiscoverAndOpenCompany()
         {
             var company = DiscoverCompany();
-            if (company != null)
+            if (company == null)
             {
-                OpenCompany(company);
+                Logger.Error("no company found");
             }
+            OpenCompany(company);
         }
 
         /**
@@ -318,7 +330,11 @@ namespace IWErpnextPoll
          */
         private void SendToQueue(SalesOrderResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no sales order response");
+                return;
+            }
             foreach (var item in response.Message)
             {
                 Queue.Enqueue(item);
@@ -328,7 +344,11 @@ namespace IWErpnextPoll
 
         private void SendToQueue(PurchaseOrderResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no purchase order response");
+                return;
+            }
             foreach (var item in response.Message)
             {
                 Queue.Enqueue(item);
@@ -338,7 +358,11 @@ namespace IWErpnextPoll
 
         private void SendToQueue(SalesInvoiceResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no sales invoice response");
+                return;
+            }
             foreach (var item in response.Message)
             {
                 Queue.Enqueue(item);
