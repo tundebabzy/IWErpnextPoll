@@ -62,13 +62,18 @@ namespace IWErpnextPoll
 
         private void InitSalesRepresentativeList()
         {
-            EmployeeInformation.Logger = Logger;
-            EmployeeInformation.Load(Company);
+            if (EmployeeInformation == null || EmployeeInformation.Data == null)
+            {
+                EmployeeInformation.Logger = Logger;
+                EmployeeInformation.Load(Company);
+            }
         }
 
         private static void CloseCompany()
         {
             Company?.Close();
+            Company?.Dispose();
+            Company = null;
         }
 
         private void OpenSession(string appKeyId)
@@ -111,6 +116,7 @@ namespace IWErpnextPoll
             if (Session != null && Session.SessionActive)
             {
                 Session.End();
+                Session.Dispose();
             }
         }
 
@@ -197,6 +203,11 @@ namespace IWErpnextPoll
             {
                 handler.Handle(document);
             }
+
+            if (Queue.IsEmpty)
+            {
+                CloseCompany();
+            }
         }
 
 
@@ -250,10 +261,16 @@ namespace IWErpnextPoll
             
             if (Session != null && Session.SessionActive && Company != null)
             {
-                if (!Company.IsClosed)
+                if (!Company.IsClosed && Queue.IsEmpty)
                 {
                     GetDocumentsThenProcessQueue();
-                } else
+                }
+                else if (!Company.IsClosed && !Queue.IsEmpty) {
+                    Logger.Debug("Queue is not yet empty. Queue will be reset. Consider increasing the poll interval.");
+                    Queue = new ConcurrentQueue<object>();
+                    GetDocumentsThenProcessQueue();
+                }
+                else
                 {
                     Logger.Debug("Session is null: {0}, Session is active: {1}, Company is null: {2}", Session == null, Session?.SessionActive, Company == null);
                 }
@@ -283,10 +300,11 @@ namespace IWErpnextPoll
         private void DiscoverAndOpenCompany()
         {
             var company = DiscoverCompany();
-            if (company != null)
+            if (company == null)
             {
-                OpenCompany(company);
+                Logger.Error("no company found");
             }
+            OpenCompany(company);
         }
 
         /**
@@ -312,30 +330,42 @@ namespace IWErpnextPoll
          */
         private void SendToQueue(SalesOrderResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no sales order response");
+                return;
+            }
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
 
         }
 
         private void SendToQueue(PurchaseOrderResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no purchase order response");
+                return;
+            }
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
 
         }
 
         private void SendToQueue(SalesInvoiceResponse response)
         {
-            if (response?.Message == null) return;
+            if (response?.Message == null)
+            {
+                Logger.Debug("no sales invoice response");
+                return;
+            }
             foreach (var item in response.Message)
             {
-                this.Queue.Enqueue(item);
+                Queue.Enqueue(item);
             }
         }
 
