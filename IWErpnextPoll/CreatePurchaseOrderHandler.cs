@@ -7,14 +7,14 @@ namespace IWErpnextPoll
 {
     internal class CreatePurchaseOrderHandler : AbstractDocumentHandler, IResourceAddress
     {
-        public CreatePurchaseOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
+        public CreatePurchaseOrderHandler(Company c, ILogger logger) : base(c, logger) { }
         public override object Handle(object request)
         {
             Logger.Information("Version {@Version}", Constants.Version);
             var purchaseOrder = CreateNewPurchaseOrder(request as PurchaseOrderDocument);
             if (GetNext() == null)
             {
-                this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger, EmployeeInformation) : null);
+                this.SetNext(purchaseOrder != null ? new LogPurchaseOrderHandler(Company, Logger) : null);
             }
             return base.Handle(request);
         }
@@ -28,7 +28,7 @@ namespace IWErpnextPoll
             {
                 Logger.Debug("Supplier {@name} in {@Document} was not found in Sage.", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
                 purchaseOrder = null;
-                SetNext(new CreateSupplierHandler(Company, Logger, EmployeeInformation));
+                SetNext(new CreateSupplierHandler(Company, Logger));
                 Logger.Debug("Supplier {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
             }
             else if (purchaseOrder != null)
@@ -55,7 +55,7 @@ namespace IWErpnextPoll
                 {
                     purchaseOrder = null;
                     Logger.Debug("Vendor {@Name} in {@Document} was not found", purchaseOrderDocument.Supplier, purchaseOrderDocument.Name);
-                    SetNext(new CreateSupplierHandler(Company, Logger, EmployeeInformation));
+                    SetNext(new CreateSupplierHandler(Company, Logger));
                     Logger.Debug("Customer {@name} has been queued for creation in Sage", purchaseOrderDocument.Supplier);
                 }
                 catch (Sage.Peachtree.API.Exceptions.ValidationException e)

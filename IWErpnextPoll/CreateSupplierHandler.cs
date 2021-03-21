@@ -6,7 +6,7 @@ namespace IWErpnextPoll
 {
     internal class CreateSupplierHandler : AbstractDocumentHandler, IResourceAddress
     {
-        public CreateSupplierHandler(Company company, ILogger logger, EmployeeInformation employeeInformation) : base(company, logger, employeeInformation) { }
+        public CreateSupplierHandler(Company company, ILogger logger) : base(company, logger) { }
 
         public override object Handle(object request)
         {
@@ -14,7 +14,7 @@ namespace IWErpnextPoll
             var supplierName = (request as PurchaseOrderDocument)?.Supplier;
             var supplierDocument = GetSupplierDetails(supplierName);
             var supplier = CreateNewSupplier(supplierDocument);
-            this.SetNext(supplier != null ? new LogSupplierCreatedHandler(Company, Logger, EmployeeInformation) : null);
+            this.SetNext(supplier != null ? new LogSupplierCreatedHandler(Company, Logger) : null);
             return base.Handle(supplierDocument);
         }
 

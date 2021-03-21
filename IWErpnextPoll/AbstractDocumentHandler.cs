@@ -19,15 +19,6 @@ namespace IWErpnextPoll
 
         protected Dictionary<string, EntityReference<Vendor>> VendorReferences { get; set; }
 
-        protected EmployeeInformation EmployeeInformation { get; set; }
-
-
-        protected AbstractDocumentHandler(Company c, ILogger logger, EmployeeInformation employeeInformation)
-        {
-            Company = c;
-            Logger = logger;
-            EmployeeInformation = employeeInformation;
-        }
 
         protected AbstractDocumentHandler(Company c, ILogger logger)
         {
@@ -86,6 +77,23 @@ namespace IWErpnextPoll
         private static string GetCustomerResourceServerAddress()
         {
             return $"{Constants.ServerUrl}/api/method/electro_erpnext.utilities.customer.get_customer_details";
+        }
+
+        protected EntityReference GetEmployeeEntityReference(string name)
+        {
+            try
+            {
+                var employeeList = Company.Factories.EmployeeFactory.List();
+                var filter = GetPropertyContainsLoadModifiers("Employee.Name", name);
+                employeeList.Load(filter);
+                var entity = employeeList.FirstOrDefault((employee => employee.IsSalesRepresentative == true));
+                return entity?.Key;
+            }
+            catch (Exception e)
+            {
+                Logger.Debug($"Could not get employee entity reference. @{e.Message}");
+                return null;
+            }
         }
 
         protected EntityReference GetItemEntityReference(string itemCode)
