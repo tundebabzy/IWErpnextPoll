@@ -8,7 +8,7 @@ namespace IWErpnextPoll
 {
     internal class CreateSalesOrderHandler : AbstractDocumentHandler
     {
-        public CreateSalesOrderHandler(Company c, ILogger logger, EmployeeInformation employeeInformation=null) : base(c, logger, employeeInformation) { }
+        public CreateSalesOrderHandler(Company c, ILogger logger) : base(c, logger) { }
 
 
         public override object Handle(object request)
@@ -17,7 +17,7 @@ namespace IWErpnextPoll
             var salesOrder = CreateNewSalesOrder(request as SalesOrderDocument);
             if (GetNext() == null)
             {
-                this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger, EmployeeInformation) : null);
+                this.SetNext(salesOrder != null ? new LogSalesOrderHandler(Company, Logger) : null);
             }
             return base.Handle(request);
         }
@@ -31,7 +31,7 @@ namespace IWErpnextPoll
             {
                 Logger.Debug("Customer {@name} in {@Document} was not found in Sage.", document.Customer, document.Name);
                 salesOrder = null;
-                SetNext(new CreateCustomerHandler(Company, Logger, EmployeeInformation));
+                SetNext(new CreateCustomerHandler(Company, Logger));
                 Logger.Debug("Customer {@name} has been queued for creation in Sage", document.Customer);
             }
             else if (salesOrder != null)
@@ -116,8 +116,14 @@ namespace IWErpnextPoll
         private void AddSalesRep(SalesOrder salesOrder, SalesOrderDocument document)
         {
             if (document.SalesRep == null) return;
-            var salesRep = EmployeeInformation.Data[document.SalesRep];
-            salesOrder.SalesRepresentativeReference = salesRep;
+            var salesRepRef = GetEmployeeEntityReference(document.SalesRep);
+
+            if (salesRepRef == null)
+            {
+                Logger.Debug("Employee {@name} was not found in Sage.", document.SalesRep);
+                return;
+            }
+            salesOrder.SalesRepresentativeReference = (EntityReference<Employee>)salesRepRef;
         }
 
         /**

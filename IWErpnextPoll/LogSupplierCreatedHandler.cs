@@ -5,7 +5,7 @@ namespace IWErpnextPoll
 {
     internal class LogSupplierCreatedHandler : AbstractDocumentHandler
     {
-        public LogSupplierCreatedHandler(Company company, ILogger logger, EmployeeInformation employeeInformation): base(company, logger, employeeInformation) { }
+        public LogSupplierCreatedHandler(Company company, ILogger logger) : base(company, logger) { }
 
         public override object Handle(object request)
         {

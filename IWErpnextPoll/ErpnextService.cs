@@ -18,7 +18,7 @@ namespace IWErpnextPoll
         private static PeachtreeSession Session { get; set; }
         public static Company Company { get; set; }
         public ConcurrentQueue<object> Queue = new ConcurrentQueue<object>();
-        private EmployeeInformation EmployeeInformation { get; } = new EmployeeInformation();
+
         private void OpenCompany(CompanyIdentifier companyId)
         {
             // Request authorization from Sage 50 for our third-party application.
@@ -31,7 +31,6 @@ namespace IWErpnextPoll
                 {
                     Company = Session.Open(companyId);
                     Logger.Information("Authorization granted");
-                    InitSalesRepresentativeList();
                 }
                 else // otherwise, display a message to user that there was insufficient access.
                 {
@@ -57,15 +56,6 @@ namespace IWErpnextPoll
             catch (Exception e)
             {
                 Logger.Debug(e, e.Message);
-            }
-        }
-
-        private void InitSalesRepresentativeList()
-        {
-            if (EmployeeInformation == null || EmployeeInformation.Data == null)
-            {
-                EmployeeInformation.Logger = Logger;
-                EmployeeInformation.Load(Company);
             }
         }
 
@@ -198,7 +188,7 @@ namespace IWErpnextPoll
         {
             Logger.Information("Version {@Version}", Constants.Version);
             if (Queue.IsEmpty || Company == null || Company.IsClosed) return;
-            var handler = new DocumentTypeHandler(Company, Logger, EmployeeInformation);
+            var handler = new DocumentTypeHandler(Company, Logger);
             while (Queue.TryDequeue(out var document) && Session.SessionActive)
             {
                 handler.Handle(document);
@@ -252,11 +242,11 @@ namespace IWErpnextPoll
                 return;
             }
 
-            if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
-            {
-                Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
-                return;
-            }
+            //if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
+            //{
+            //    Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
+            //    return;
+            //}
 
             if (Company == null || Company.IsClosed)
             {
