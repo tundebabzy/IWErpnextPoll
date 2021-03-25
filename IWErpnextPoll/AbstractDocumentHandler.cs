@@ -84,7 +84,7 @@ namespace IWErpnextPoll
             try
             {
                 var employeeList = Company.Factories.EmployeeFactory.List();
-                var filter = GetPropertyContainsLoadModifiers("Employee.Name", name);
+                var filter = GetPropertyContainsLoadModifiers("Employee.ID", name);
                 employeeList.Load(filter);
                 var entity = employeeList.FirstOrDefault((employee => employee.IsSalesRepresentative == true));
                 return entity?.Key;

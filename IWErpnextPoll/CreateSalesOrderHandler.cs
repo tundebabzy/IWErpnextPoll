@@ -121,7 +121,7 @@ namespace IWErpnextPoll
             if (salesRepRef == null)
             {
                 Logger.Debug("Employee {@name} was not found in Sage.", document.SalesRep);
-                return;
+                throw new InvalidOperationException("Employee should not be null in sales order");
             }
             salesOrder.SalesRepresentativeReference = (EntityReference<Employee>)salesRepRef;
         }
