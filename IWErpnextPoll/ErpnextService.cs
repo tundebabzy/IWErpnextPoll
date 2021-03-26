@@ -242,11 +242,11 @@ namespace IWErpnextPoll
                 return;
             }
 
-            //if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
-            //{
-            //    Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
-            //    return;
-            //}
+            if (!_canRequest || (DateTime.Now.Hour >= 6 && DateTime.Now.Hour <= 17))
+            {
+                Logger.Debug("Service cannot request: {0}, {1}", _canRequest, DateTime.Now.Hour);
+                return;
+            }
 
             if (Company == null || Company.IsClosed)
             {
